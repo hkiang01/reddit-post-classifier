@@ -8,6 +8,12 @@
     <artifactId>post-classifier</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <spark.version>2.0.1</spark.version>
+        <jraw.version>0.9.0</jraw.version>
+    </properties>
+
+
     <build>
         <plugins>
             <plugin>
@@ -20,13 +26,34 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <!-- http://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11 -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.11</artifactId>
-            <version>2.0.1</version>
+            <version>${spark.version}</version>
+        </dependency>
+        <!-- https://bintray.com/thatjavanerd/maven/JRAW -->
+        <dependency>
+            <groupId>net.dean.jraw</groupId>
+            <artifactId>JRAW</artifactId>
+            <version>${jraw.version}</version>
+        </dependency>
+        <!-- https://code.google.com/archive/p/json-simple/ -->
+        <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
         </dependency>
     </dependencies>
 

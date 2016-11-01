@@ -10,4 +10,5 @@
 log/
 target/
 
-
+# Credentials
+src/main/resources/credentials.json
