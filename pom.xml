@@ -13,6 +13,27 @@
         <jraw.version>0.9.0</jraw.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>bintray</name>
+            <url>http://jcenter.bintray.com</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-thatjavanerd-maven</id>
+            <name>bintray-plugins</name>
+            <url>http://dl.bintray.com/thatjavanerd/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>
@@ -47,6 +68,7 @@
             <groupId>net.dean.jraw</groupId>
             <artifactId>JRAW</artifactId>
             <version>${jraw.version}</version>
+            <type>pom</type>
         </dependency>
         <!-- https://code.google.com/archive/p/json-simple/ -->
         <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
