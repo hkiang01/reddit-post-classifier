@@ -68,7 +68,7 @@
             <groupId>net.dean.jraw</groupId>
             <artifactId>JRAW</artifactId>
             <version>${jraw.version}</version>
-            <type>pom</type>
+            <!--<type>pom</type>-->
         </dependency>
         <!-- https://code.google.com/archive/p/json-simple/ -->
         <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
