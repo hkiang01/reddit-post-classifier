@@ -5,13 +5,14 @@ import net.dean.jraw.http.UserAgent;
 import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
+import net.dean.jraw.paginators.SubredditPaginator;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This class provides an easy way to ingest the contents of a given subreddit.
@@ -25,6 +26,9 @@ public class SubredditIngestion {
 
     /** The {@link RedditClient} used to facilitate the ingestion */
     private RedditClient redditClient;
+
+    /** The {@link SubredditPaginator} used to facilitate the ingestion */
+    private SubredditPaginator subredditPaginator;
 
     /** Used to fetch the project properties from pom.xml */
     private ProjectProperties getProjectProperties() {
@@ -109,24 +113,41 @@ public class SubredditIngestion {
             e.printStackTrace();
         }
 
+        // generate the subredditPaginator
+        generateSubredditPaginator();
     }
 
     /** Gets the username **/
-    public String getUsername() {
+    private String getUsername() {
         return getCredentials().getUsername();
     }
 
-    /** Gets the subreddit */
-    public String getSubreddit() {
+    /** Gets subreddits as a Collection */
+    private String getSubreddit() {
         return subreddit;
     }
 
-    /** Setse the subreddit */
-    public void setSubreddit(String subreddit) {
-        this.subreddit = subreddit;
+    /** Adds to subreddits */
+    public SubredditPaginator addSubreddit(String subreddit) {
+        generateSubredditPaginator();
+        return subredditPaginator;
     }
 
-    public RedditClient getRedditClient() {
+    /** Gets the subredditPaginator */
+    public SubredditPaginator getSubredditPaginator() { return subredditPaginator; }
+
+//    /** Retrieves subreddits as a comma separating String to facilitate generateSubredditPaginator */
+//    private String getSubredditsAsCommaSeparatedString() {
+//        return subreddits.stream().reduce("", (a,b) -> a + ", " + b).substring(2);
+//    }
+
+    /** Sets the subredditPaginator based on subreddits using redditClient */
+    private void generateSubredditPaginator() {
+        subredditPaginator = new SubredditPaginator(redditClient, subreddit);
+    }
+
+    /** Gets the reddicClient */
+    private RedditClient getRedditClient() {
         return this.redditClient;
     }
 
