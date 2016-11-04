@@ -22,13 +22,60 @@ import java.util.*;
 public class SubredditIngestion {
 
     /** The subreddit to ingest */
-    private String subreddit;
+    private Collection<String> subreddits;
+    private String commaDelimitedSubreddits;
 
-    /** The {@link RedditClient} used to facilitate the ingestion */
-    private RedditClient redditClient;
+    /** The {@link RedditClient} used to facilitate the ingestion. Only 1 redditClient per user, a singleton. */
+    private static RedditClient redditClient;
 
     /** The {@link SubredditPaginator} used to facilitate the ingestion */
     private SubredditPaginator subredditPaginator;
+
+    /** Instantiates a new SubredditIngestion for the given subreddit */
+    public SubredditIngestion(Collection<String> subreddits) {
+        // Descriptive User-Agent header required by Reddit API (https://github.com/thatJavaNerd/JRAW/wiki/Quickstart)
+        UserAgent myUserAgent = createUserAgent();
+        redditClient = new RedditClient(myUserAgent);
+
+        // OAuth Credentials (https://thatjavanerd.github.io/JRAW/docs/latest/net/dean/jraw/http/oauth/Credentials.html)
+        Credentials credentials = getCredentials();
+        try {
+            OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
+            // notify the RedditClient that we have been authorized
+            redditClient.authenticate(authData);
+        } catch (OAuthException e) {
+            System.out.println("Invalid credentials in resources/credentials.json");
+            e.printStackTrace();
+        }
+        // generate the subredditPaginator
+        this.subreddits = subreddits;
+        generateSubredditPaginator();
+    }
+
+    /** Gets the username **/
+    public String getUsername() {
+        return getCredentials().getUsername();
+    }
+
+    /** Gets subreddits as a Collection */
+    public Collection<String> getSubreddits() {
+        return this.subreddits;
+    }
+
+    /** Adds to subreddits */
+    public SubredditPaginator addSubreddit(String subreddit) {
+        this.subreddits.add(subreddit);
+        generateSubredditPaginator();
+        return this.subredditPaginator;
+    }
+
+    /** Gets the subredditPaginator */
+    public SubredditPaginator getSubredditPaginator() { return this.subredditPaginator; }
+
+    /** Gets the reddicClient */
+    public RedditClient getRedditClient() {
+        return redditClient;
+    }
 
     /** Used to fetch the project properties from pom.xml */
     private ProjectProperties getProjectProperties() {
@@ -81,74 +128,26 @@ public class SubredditIngestion {
     /** Creates the user agent using project properties in pom.xml */
     private UserAgent createUserAgent() {
         // get project properties
-        ProjectProperties projectProperties = getProjectProperties();
+        ProjectProperties projectProperties = this.getProjectProperties();
         String uniqueId = projectProperties.groupId + "." + projectProperties.artifactId;
 
         // get user name
-        Credentials credentials = getCredentials();
+        Credentials credentials = this.getCredentials();
         String username = credentials.getUsername();
 
         // instantiates the user agent
         return UserAgent.of("desktop", uniqueId, projectProperties.version, username);
     }
 
-    /** Instantiates a new SubredditIngestion for the given subreddit */
-    public SubredditIngestion(String subreddit) {
-
-        // class variable instantiation
-        this.subreddit = subreddit;
-
-        // Descriptive User-Agent header required by Reddit API (https://github.com/thatJavaNerd/JRAW/wiki/Quickstart)
-        UserAgent myUserAgent = createUserAgent();
-        redditClient = new RedditClient(myUserAgent);
-
-        // OAuth Credentials (https://thatjavanerd.github.io/JRAW/docs/latest/net/dean/jraw/http/oauth/Credentials.html)
-        Credentials credentials = getCredentials();
-        try {
-            OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
-            // notify the RedditClient that we have been authorized
-            redditClient.authenticate(authData);
-        } catch (OAuthException e) {
-            System.out.println("Invalid credentials in resources/credentials.json");
-            e.printStackTrace();
-        }
-
-        // generate the subredditPaginator
-        generateSubredditPaginator();
+    /** Retrieves subreddits as a comma separating String to facilitate {@link #generateSubredditPaginator() generateSubredditPaginator} */
+    private String getSubredditsAsCommaSeparatedString() {
+        return this.subreddits.stream().reduce("", (a,b) -> a + "+" + b).substring(1);
     }
-
-    /** Gets the username **/
-    private String getUsername() {
-        return getCredentials().getUsername();
-    }
-
-    /** Gets subreddits as a Collection */
-    private String getSubreddit() {
-        return subreddit;
-    }
-
-    /** Adds to subreddits */
-    public SubredditPaginator addSubreddit(String subreddit) {
-        generateSubredditPaginator();
-        return subredditPaginator;
-    }
-
-    /** Gets the subredditPaginator */
-    public SubredditPaginator getSubredditPaginator() { return subredditPaginator; }
-
-//    /** Retrieves subreddits as a comma separating String to facilitate generateSubredditPaginator */
-//    private String getSubredditsAsCommaSeparatedString() {
-//        return subreddits.stream().reduce("", (a,b) -> a + ", " + b).substring(2);
-//    }
 
     /** Sets the subredditPaginator based on subreddits using redditClient */
     private void generateSubredditPaginator() {
-        subredditPaginator = new SubredditPaginator(redditClient, subreddit);
-    }
-
-    /** Gets the reddicClient */
-    private RedditClient getRedditClient() {
-        return this.redditClient;
+        this.commaDelimitedSubreddits = getSubredditsAsCommaSeparatedString();
+        subredditPaginator = new SubredditPaginator(redditClient, this.commaDelimitedSubreddits);
     }
 
     /** Facilitates {@link #getProjectProperties() getProjectProperties} method */
