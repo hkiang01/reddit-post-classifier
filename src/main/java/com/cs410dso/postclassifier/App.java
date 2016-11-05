@@ -14,7 +14,7 @@ public class App {
         List<String> listOfSubreddits = new ArrayList<>();
         listOfSubreddits.add("machinelearning");
         FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(listOfSubreddits, 10);
-        ImmutableListMultimap<Boolean, Submission> submissions = ingestion.getSubmissionsByStickied();
+        ImmutableListMultimap<String, Submission> submissions = ingestion.getSubmissionByDomain();
         submissions.entries().forEach(e -> System.out.println(e.toString()));
     }
 }

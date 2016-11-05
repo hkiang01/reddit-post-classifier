@@ -1,6 +1,7 @@
 package com.cs410dso.postclassifier.ingestion;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -35,7 +36,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * @see <a href="https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps">https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps</a>
      */
     public ImmutableListMultimap<Boolean, Submission> getSubmissionsByStickied() {
-        ImmutableSet<Submission> unfiltered =  ImmutableSet.copyOf(this.getSubmissions());
+        ImmutableCollection<Submission> unfiltered =  this.getSubmissions();
         Function<Submission, Boolean> isStickiedFunction = new Function<Submission, Boolean>() {
             public Boolean apply(Submission submission) {
                 return submission.isStickied();
@@ -43,5 +44,21 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         };
         return Multimaps.index(unfiltered, isStickiedFunction);
     }
+
+    /**
+     * Maps {@link Submission}s by their domain
+     * @return a {@link ImmutableMultimap} whose members are indexed by their domain
+     * @see <a href="https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps">https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps</a>
+     */
+    public ImmutableListMultimap<String, Submission> getSubmissionByDomain() {
+        ImmutableCollection<Submission> unfiltered =  this.getSubmissions();
+        Function<Submission, String> domainFunction = new Function<Submission, String>() {
+            public String apply(Submission submission) {
+                return submission.getDomain();
+            }
+        };
+        return Multimaps.index(unfiltered, domainFunction);
+    }
+
 
 }
