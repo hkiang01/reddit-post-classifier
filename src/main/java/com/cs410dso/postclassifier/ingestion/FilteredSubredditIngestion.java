@@ -1,5 +1,11 @@
 package com.cs410dso.postclassifier.ingestion;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import net.dean.jraw.models.Submission;
 import java.util.Collection;
 
 /**
@@ -21,6 +27,21 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     public FilteredSubredditIngestion(Collection<String> subreddits, int limit) {
         super(subreddits, limit);
+    }
+
+    /**
+     * Maps {@link Submission}s as to whether or not they are stickied
+     * @return a {@link ImmutableMultimap} whose true and false members are and are not stickied, respectively.
+     * @see <a href="https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps">https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps</a>
+     */
+    public ImmutableListMultimap<Boolean, Submission> getSubmissionsByStickied() {
+        ImmutableSet<Submission> unfiltered =  ImmutableSet.copyOf(this.getSubmissions());
+        Function<Submission, Boolean> isStickiedFunction = new Function<Submission, Boolean>() {
+            public Boolean apply(Submission submission) {
+                return submission.isStickied();
+            }
+        };
+        return Multimaps.index(unfiltered, isStickiedFunction);
     }
 
 }

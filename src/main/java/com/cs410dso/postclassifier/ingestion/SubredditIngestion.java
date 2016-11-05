@@ -149,7 +149,7 @@ public class SubredditIngestion {
      * Gets the raw {@link Submission}s of the {{@link #SubredditIngestion()}}
      * @return A {@link Collection} of {@link Submission}s
      */
-    public Collection<Submission> getSubmissions() {
+    public ImmutableCollection<Submission> getSubmissions() {
         return this.submissions;
     }
 
