@@ -17,6 +17,7 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class provides an easy way to ingest the contents of a given subreddit.
@@ -121,6 +122,18 @@ public class SubredditIngestion {
      */
     public Collection<String> getSubreddits() {
         return this.subreddits;
+    }
+
+    /**
+     * Gets the self domains of each subreddit in the {@link SubredditIngestion}
+     * @return a {@link Collection} of {@link String}s of self domains per subreddit
+     */
+    public Collection<String> getSubredditSelfDomains() {
+        Collection<String> selfSubreddits = this.getSubreddits().stream()
+                //.map(String::toLowerCase)
+                .map(e -> "self." + e)
+                .collect(Collectors.toCollection(TreeSet::new));
+        return selfSubreddits;
     }
 
     /** Adds to subreddits */
