@@ -279,10 +279,28 @@ public class SubredditIngestion {
      * Facilitates {@link #getProjectProperties() getProjectProperties} method
      */
     private class ProjectProperties {
+
+        /**
+         * The groupId {2link String}
+         */
         private String groupId;
+
+        /**
+         * The artifactId {@link String}
+         */
         private String artifactId;
+
+        /**
+         * The version {@link String}
+         */
         private String version;
 
+        /**
+         * A parameterized constructor for {@link ProjectProperties}
+         * @param groupId a {@link String} representing the groupId
+         * @param artifactId a {@link String} representing the artifactId
+         * @param version a {@link String} representing the version
+         */
         ProjectProperties(String groupId, String artifactId, String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;

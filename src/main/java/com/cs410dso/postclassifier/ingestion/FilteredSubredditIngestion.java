@@ -4,25 +4,44 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import net.dean.jraw.http.HttpRequest;
+import net.dean.jraw.http.RequestBody;
+import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
+import org.apache.commons.collections.HashBag;
+import org.apache.commons.io.IOUtils;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.AbstractCollection;
+import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import jersey.repackaged.com.google.common.collect.HashMultiset;
 import scala.collection.AbstractSeq;
 
 /**
  * Facilitates the ingestion of {@link net.dean.jraw.models.Submission} from a {@link Collection} of subreddits using a set of custom filtering rules.
  */
 public class FilteredSubredditIngestion extends SubredditIngestion {
+
+    private static final String juicerPrependURL = "https://juicer.herokuapp.com/api/article?url=";
 
     /**
      * Instantiates a new FilteredSubredditIngestion
@@ -90,5 +109,80 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         return Multimaps.index(submissions, selfFunction);
     }
 
+    /**
+     * Get text and flair for every submission
+     * @return a {@link Collection} containing {@link java.util.AbstractMap.SimpleEntry} of {@link Submission}s and {@link TextFlair}s
+     */
+    public Collection<AbstractMap.SimpleEntry<Submission, TextFlair>> getSubmissionsTextFlair() {
+        ImmutableListMultimap<Boolean, Submission> submissions = getSubmissionsBySelf();
+        return submissions.entries().parallelStream().map(e -> { // parallel streams
+            Submission curSubmission = e.getValue();
+            if (e.getKey()) { // if the entry's domain is from self.subreddit
+                TextFlair submissionTextFlair = new TextFlair(curSubmission.getSelftext(), curSubmission.getSubmissionFlair());
+                return new AbstractMap.SimpleEntry<Submission, TextFlair>(curSubmission, submissionTextFlair);
+            } else {
+                String url = curSubmission.getUrl();
+                String text = getSubmissionArticleTextViajuicer(url);
+                TextFlair submissionTextFlair = new TextFlair(text, curSubmission.getSubmissionFlair());
+                return new AbstractMap.SimpleEntry<Submission, TextFlair>(curSubmission, submissionTextFlair);
+            }
+        }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
+    }
+
+    /**
+     * Uses juicer to grab the article body of an article
+     * @param urlString the URL to plug into juicer API
+     * @return the body result of the juicer API call
+     * @see <a href="https://juicer.herokuapp.com/">juicer</a>
+     * WARNING: Does not work for all sites and document types, e.g., PDFs
+     */
+    public String getSubmissionArticleTextViajuicer(String urlString) {
+        try{
+            String result =  IOUtils.toString(new URL(juicerPrependURL + urlString).openStream());
+            JsonParser jsonParser = new JsonParser();
+            JsonElement element = jsonParser.parse(result);
+            JsonObject jsonObject = element.getAsJsonObject();
+            return jsonObject.get("article").getAsJsonObject().get("body").getAsString(); // root -> article -> body
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
+    }
+
+    /**
+     * Used to store text and flair of a {@link Submission}
+     */
+    public class TextFlair {
+
+        /**
+         * The text
+         */
+        private String text;
+
+        /**
+         * The {@link Flair}
+         */
+        private Flair flair;
+
+        /**
+         * Parameterized constructor
+         * @param text A {@link String} of text
+         * @param flair A {@link Flair}
+         */
+        TextFlair(String text, Flair flair) {
+            this.text = text;
+            this.flair = flair;
+        }
+
+        /**
+         * A {@link String} representation of a {@link TextFlair}
+         * @return The {@link String} representation
+         */
+        public String toString() {
+            return "flair: " + flair.getCssClass() + "\t" + flair.getText() + "\ntext: " + text;
+        }
+
+    }
 
 }
