@@ -1,47 +1,50 @@
 package com.cs410dso.postclassifier.ingestion;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import net.dean.jraw.http.HttpRequest;
-import net.dean.jraw.http.RequestBody;
 import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
-import org.apache.commons.collections.HashBag;
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AbstractParser;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.pdf.PDFParser;
+import org.apache.tika.sax.BodyContentHandler;
 
-import java.net.MalformedURLException;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.AbstractCollection;
 import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import jersey.repackaged.com.google.common.collect.HashMultiset;
-import scala.collection.AbstractSeq;
+import scala.tools.cmd.Meta;
+
 
 /**
  * Facilitates the ingestion of {@link net.dean.jraw.models.Submission} from a {@link Collection} of subreddits using a set of custom filtering rules.
  */
 public class FilteredSubredditIngestion extends SubredditIngestion {
 
-    private static final String juicerPrependURL = "https://juicer.herokuapp.com/api/article?url=";
+    /**
+     * The URL used for Juicer API
+     */
+    private static final String JUICER_PREPEND_URL = "https://juicer.herokuapp.com/api/article?url=";
+
+    /**
+     * The minimum length of a "valid" text file
+     */
+    private static final int TEXT_THRESHOLD = 150;
 
     /**
      * Instantiates a new FilteredSubredditIngestion
@@ -65,13 +68,13 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * @see <a href="https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps">https://github.com/google/guava/wiki/CollectionUtilitiesExplained#multimaps</a>
      */
     public ImmutableListMultimap<Boolean, Submission> getSubmissionsByStickied() {
-        ImmutableCollection<Submission> unfiltered =  this.getSubmissions();
+        ImmutableCollection<Submission> unBucketed =  this.getSubmissions();
         Function<Submission, Boolean> isStickiedFunction = new Function<Submission, Boolean>() {
             public Boolean apply(Submission submission) {
                 return submission.isStickied();
             }
         };
-        return Multimaps.index(unfiltered, isStickiedFunction);
+        return Multimaps.index(unBucketed, isStickiedFunction);
     }
 
     /**
@@ -111,22 +114,96 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
 
     /**
      * Get text and flair for every submission
-     * @return a {@link Collection} containing {@link java.util.AbstractMap.SimpleEntry} of {@link Submission}s and {@link TextFlair}s
+     * @return a {@link Collection} containing {@link java.util.AbstractMap.SimpleEntry} of {@link Submission}s and {@link UrlAuthorFlairMethodText}s
      */
-    public Collection<AbstractMap.SimpleEntry<Submission, TextFlair>> getSubmissionsTextFlair() {
+    public Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> getSubmissionsTextFlair() {
         ImmutableListMultimap<Boolean, Submission> submissions = getSubmissionsBySelf();
         return submissions.entries().parallelStream().map(e -> { // parallel streams
             Submission curSubmission = e.getValue();
             if (e.getKey()) { // if the entry's domain is from self.subreddit
-                TextFlair submissionTextFlair = new TextFlair(curSubmission.getSelftext(), curSubmission.getSubmissionFlair());
-                return new AbstractMap.SimpleEntry<Submission, TextFlair>(curSubmission, submissionTextFlair);
+                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission.getUrl(), curSubmission.getAuthor(), curSubmission.getSubmissionFlair(), "JRAW's getSelftext", curSubmission.getSelftext());
+                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
             } else {
                 String url = curSubmission.getUrl();
                 String text = getSubmissionArticleTextViajuicer(url);
-                TextFlair submissionTextFlair = new TextFlair(text, curSubmission.getSubmissionFlair());
-                return new AbstractMap.SimpleEntry<Submission, TextFlair>(curSubmission, submissionTextFlair);
+                String method = "juicer";
+                if(text.length() < TEXT_THRESHOLD) {
+                    text = getSubmissionArticleViaTikaAutoDetectParser(url);
+                    method = "Apache Tika Auto-Detect Parser";
+                }
+                if(text.length() < TEXT_THRESHOLD && url.contains("pdf")) {
+                    text = getSubmissionArticleViaTikaPDFParser(url);
+                    method = "Apache Tika PDF Parser";
+                }
+                String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
+                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(url, curSubmission.getAuthor(), curSubmission.getSubmissionFlair(), method, textWithoutWhitespace);
+                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
             }
         }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
+    }
+
+    /**
+     * Uses Apache Tika's PDF Parser to parse text from a URL
+     * @param urlString the URL to plug into Apache Tika's Auto-Detect Parser
+     * @return the body result of the juicer API call
+     * @see <a href="https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser">Apache Tika's Auto-Detect Parser</a>
+     * WARNING: Does not work for all sites and document types, e.g., PDFs
+     */
+    private String getSubmissionArticleViaTikaPDFParser(String urlString) {
+        // https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser
+        return tikaParserHelper(urlString, new PDFParser(), new BodyContentHandler(), new Metadata());
+    }
+
+    /**
+     * Uses Apache Tika's Auto-Detect Parser to parse text from a URL
+     * @param urlString the URL to plug into Apache Tika's Auto-Detect Parser
+     * @return the body result of the juicer API call
+     * @see <a href="https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser">Apache Tika's Auto-Detect Parser</a>
+     * WARNING: Does not work for all sites and document types, e.g., PDFs
+     */
+    private String getSubmissionArticleViaTikaAutoDetectParser(String urlString) {
+        return tikaParserHelper(urlString, new AutoDetectParser(), new BodyContentHandler(), new Metadata());
+    }
+
+    /**
+     * A helper for using Apache Tika's Parser API
+     * @param urlString the url to parse
+     * @param parser the {@link AbstractParser}
+     * @param bodyContentHandler the {@link BodyContentHandler}
+     * @param metadata the {@link Metadata}
+     * @return the resultant parsed string
+     * @see  <a href="https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser">https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser</a>
+     */
+    private String tikaParserHelper(String urlString, AbstractParser parser, BodyContentHandler bodyContentHandler, Metadata metadata) {
+        // https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser
+        try{
+            // https://docs.oracle.com/javase/tutorial/networking/urls/readingURL.html
+            URL url = new URL(urlString);
+            InputStream inputStream = url.openStream();
+            parser.parse(inputStream, bodyContentHandler, metadata);
+            return bodyContentHandler.toString();
+
+        } catch (Exception e){
+            // what if the protocol in the URL messed up http vs https?
+            // https://stackoverflow.com/questions/1171513/how-to-change-only-the-protocol-part-of-a-java-net-url-object
+            try {
+                URL url = new URL(urlString);
+                String protocol = url.getProtocol();
+                if (protocol.equals("http")) {
+                    url = new URL("https", url.getHost(), url.getPort(), url.getFile());
+                }
+                else if(protocol.equals("https")) {
+                    url = new URL("http", url.getHost(), url.getPort(), url.getFile());
+                }
+                InputStream inputStream = url.openStream();
+                parser.parse(inputStream, bodyContentHandler, metadata);
+                return bodyContentHandler.toString();
+            } catch (Exception eInner) {
+                eInner.printStackTrace();
+            }
+            e.printStackTrace();
+            return "";
+        }
     }
 
     /**
@@ -138,7 +215,15 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     public String getSubmissionArticleTextViajuicer(String urlString) {
         try{
-            String result =  IOUtils.toString(new URL(juicerPrependURL + urlString).openStream());
+            // http://howtodoinjava.com/core-java/io/how-to-read-data-from-inputstream-into-string-in-java/
+            URL url = new URL(JUICER_PREPEND_URL + urlString);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader((url).openStream()));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            String result = stringBuilder.toString();
             JsonParser jsonParser = new JsonParser();
             JsonElement element = jsonParser.parse(result);
             JsonObject jsonObject = element.getAsJsonObject();
@@ -147,18 +232,22 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
             e.printStackTrace();
             return "";
         }
-
     }
 
     /**
      * Used to store text and flair of a {@link Submission}
      */
-    public class TextFlair {
+    public class UrlAuthorFlairMethodText {
 
         /**
-         * The text
+         * The url
          */
-        private String text;
+        private String url;
+
+        /**
+         * The author
+         */
+        private String author;
 
         /**
          * The {@link Flair}
@@ -166,21 +255,42 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         private Flair flair;
 
         /**
+         * The method
+         */
+        private String method;
+
+        /**
+         * The text
+         */
+        private String text;
+
+        /**
          * Parameterized constructor
+         * @param author A {@link String} representing the author
          * @param text A {@link String} of text
          * @param flair A {@link Flair}
          */
-        TextFlair(String text, Flair flair) {
-            this.text = text;
+        UrlAuthorFlairMethodText(String url, String author, Flair flair, String method, String text) {
+            this.url = url;
+            this.author = author;
             this.flair = flair;
+            this.method = method;
+            this.text = text;
         }
 
         /**
-         * A {@link String} representation of a {@link TextFlair}
+         * A {@link String} representation of a {@link UrlAuthorFlairMethodText}
          * @return The {@link String} representation
          */
         public String toString() {
-            return "flair: " + flair.getCssClass() + "\t" + flair.getText() + "\ntext: " + text;
+            return "\n================================================================================\n" +
+                    "url: " + this.url + "\n" +
+                    "author: " + this.author + "\n" +
+                    "flair: " + flair.getCssClass() + "\t" + flair.getText() + "\n" +
+                    "method: " + this.method + "\n" +
+                    "text length: " + text.length() + " \n" +
+                    "text: " + text + "\n" +
+                    "================================================================================\n";
         }
 
     }

@@ -16,12 +16,12 @@ import java.util.List;
  */
 public class App {
     public static void main(String[] args) {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
         List<String> listOfSubreddits = new ArrayList<>();
         listOfSubreddits.add("machinelearning");
-        FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(listOfSubreddits, 2);
-        Collection<AbstractMap.SimpleEntry<Submission, FilteredSubredditIngestion.TextFlair>> stf = ingestion.getSubmissionsTextFlair();
-        ingestion.getSubmissionsTextFlair().stream().forEach(e -> System.out.println(e.getValue().toString()));
+        FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(listOfSubreddits, 5);
+        Collection<AbstractMap.SimpleEntry<Submission, FilteredSubredditIngestion.UrlAuthorFlairMethodText>> stf = ingestion.getSubmissionsTextFlair();
+        stf.forEach(e -> System.out.println(e.getValue().toString()));
+//        ingestion.getSubmissions().stream().forEach(e -> System.out.println(e.toString()));
 
     }
 }
