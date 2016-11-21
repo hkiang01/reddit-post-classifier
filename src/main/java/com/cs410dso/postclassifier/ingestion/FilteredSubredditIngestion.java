@@ -11,10 +11,11 @@ import com.google.gson.JsonParser;
 import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.sax.BodyContentHandler;
 
@@ -27,9 +28,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import scala.tools.cmd.Meta;
-
 
 /**
  * Facilitates the ingestion of {@link net.dean.jraw.models.Submission} from a {@link Collection} of subreddits using a set of custom filtering rules.
@@ -151,7 +149,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     private String getSubmissionArticleViaTikaPDFParser(String urlString) {
         // https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser
-        return tikaParserHelper(urlString, new PDFParser(), new BodyContentHandler(), new Metadata());
+        return tikaParserHelper(urlString, new PDFParser(), new BodyContentHandler(), new Metadata(), new ParseContext());
     }
 
     /**
@@ -162,7 +160,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * WARNING: Does not work for all sites and document types, e.g., PDFs
      */
     private String getSubmissionArticleViaTikaAutoDetectParser(String urlString) {
-        return tikaParserHelper(urlString, new AutoDetectParser(), new BodyContentHandler(), new Metadata());
+        return tikaParserHelper(urlString, new AutoDetectParser(), new BodyContentHandler(), new Metadata(), new ParseContext());
     }
 
     /**
@@ -174,13 +172,13 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * @return the resultant parsed string
      * @see  <a href="https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser">https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser</a>
      */
-    private String tikaParserHelper(String urlString, AbstractParser parser, BodyContentHandler bodyContentHandler, Metadata metadata) {
+    private String tikaParserHelper(String urlString, Parser parser, BodyContentHandler bodyContentHandler, Metadata metadata, ParseContext parseContext) {
         // https://tika.apache.org/1.14/examples.html#Parsing_using_the_Auto-Detect_Parser
         try{
             // https://docs.oracle.com/javase/tutorial/networking/urls/readingURL.html
             URL url = new URL(urlString);
             InputStream inputStream = url.openStream();
-            parser.parse(inputStream, bodyContentHandler, metadata);
+            parser.parse(inputStream, bodyContentHandler, metadata, parseContext);
             return bodyContentHandler.toString();
 
         } catch (Exception e){
@@ -196,7 +194,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
                     url = new URL("http", url.getHost(), url.getPort(), url.getFile());
                 }
                 InputStream inputStream = url.openStream();
-                parser.parse(inputStream, bodyContentHandler, metadata);
+                parser.parse(inputStream, bodyContentHandler, metadata, parseContext);
                 return bodyContentHandler.toString();
             } catch (Exception eInner) {
                 eInner.printStackTrace();
