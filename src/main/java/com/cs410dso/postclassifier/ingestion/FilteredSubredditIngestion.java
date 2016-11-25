@@ -8,9 +8,13 @@ import com.google.common.collect.Multimaps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.AutoDetectParser;
@@ -18,16 +22,32 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.json.simple.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 
 /**
  * Facilitates the ingestion of {@link net.dean.jraw.models.Submission} from a {@link Collection} of subreddits using a set of custom filtering rules.
@@ -38,6 +58,8 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * The URL used for Juicer API
      */
     private static final String JUICER_PREPEND_URL = "https://juicer.herokuapp.com/api/article?url=";
+
+    private static final String JSON_PATH = "./data.json";
 
     /**
      * The minimum length of a "valid" text file
@@ -114,12 +136,12 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * Get text and flair for every submission
      * @return a {@link Collection} containing {@link java.util.AbstractMap.SimpleEntry} of {@link Submission}s and {@link UrlAuthorFlairMethodText}s
      */
-    public Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> getSubmissionsTextFlair() {
+    public Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> getSubmissionsAndMetadata() {
         ImmutableListMultimap<Boolean, Submission> submissions = getSubmissionsBySelf();
         return submissions.entries().parallelStream().map(e -> { // parallel streams
             Submission curSubmission = e.getValue();
             if (e.getKey()) { // if the entry's domain is from self.subreddit
-                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission.getUrl(), curSubmission.getAuthor(), curSubmission.getSubmissionFlair(), "JRAW's getSelftext", curSubmission.getSelftext());
+                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, "JRAW's getSelftext", curSubmission.getSelftext());
                 return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
             } else {
                 String url = curSubmission.getUrl();
@@ -134,7 +156,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
                     method = "Apache Tika PDF Parser";
                 }
                 String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
-                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(url, curSubmission.getAuthor(), curSubmission.getSubmissionFlair(), method, textWithoutWhitespace);
+                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, method, textWithoutWhitespace);
                 return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
             }
         }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
@@ -233,6 +255,68 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     }
 
     /**
+     * Get a collection of text and flair whose text entries are above TEXT_THRESHOLD
+     * @return a {@link Collection} containing {@link JSONObject} containing both the {@link Submission} and its associated metadata (url, author, flair, method, text)
+     */
+    public Collection<JSONObject> getSubmissionAndMetadataAboveThreshold() {
+        Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> entries = this.getSubmissionsAndMetadata();
+        return entries.parallelStream()
+                .filter(e -> e.getValue().text.length() >= TEXT_THRESHOLD)
+                .map(e -> {
+                    Submission submission = e.getKey();
+                    ObjectMapper mapper = new ObjectMapper();
+                    Map<String, Object> result = mapper.convertValue(submission.getDataNode(), Map.class);
+                    JSONObject submissionJsonObject = new JSONObject(result);
+                    JSONObject jsonObject = e.getValue().toJSONObject();
+                    jsonObject.put("submission", submissionJsonObject);
+                    return jsonObject;
+                })
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
+     * Gets author and created from jsonObject and joins them with an underscore to get [author]_[created]
+     * @param jsonObject the {@link JSONObject} containing a {@link Submission} and associated metadata
+     * @return a {@link String} with the format [author]_[created]
+     */
+    private String getAuthorUnderscoreCreatedUniqueKey(JSONObject jsonObject) {
+        String author = jsonObject.getOrDefault("author", "").toString();
+        String created = jsonObject.getOrDefault("created", "").toString();
+        return author.concat("_").concat(created);
+    }
+
+    /**
+     * Writes posts with [author]_[created] as key and submission and associated metadata as value
+     * in a single json file in JSON_PATH
+     */
+    public void saveSubmissionAndMetadataAboveThresholdAsJson() {
+        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThreshold();
+        Path p = Paths.get(JSON_PATH);
+        JSONObject combinedPosts = posts.stream().map(e -> {
+            // associated JSONObject with [author]_[created] as key
+            JSONObject jsonObject = new JSONObject();
+            String key = getAuthorUnderscoreCreatedUniqueKey(e);
+            System.out.println("key: " + key);
+            jsonObject.put(key, e);
+            return jsonObject;
+        }).reduce(new JSONObject(), (accumulator, e) -> {
+            // accumulate them all into a single JSONObject
+            String eKeySet = e.keySet().toString(); // there's only 1 key
+            String eKey = eKeySet.substring(1, eKeySet.length() - 1);
+            JSONObject eVal = (JSONObject) e.get(eKey);
+            accumulator.put(eKey, eVal);
+            return accumulator;
+        });
+        byte data[] = combinedPosts.toJSONString().getBytes();
+        try (OutputStream out = new BufferedOutputStream(
+                Files.newOutputStream(p, CREATE, APPEND))) {
+            out.write(data, 0, data.length);
+        } catch (IOException x) {
+            x.printStackTrace();
+        }
+    }
+
+    /**
      * Used to store text and flair of a {@link Submission}
      */
     public class UrlAuthorFlairMethodText {
@@ -263,17 +347,24 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         private String text;
 
         /**
-         * Parameterized constructor
-         * @param author A {@link String} representing the author
-         * @param text A {@link String} of text
-         * @param flair A {@link Flair}
+         * The date the Submission was created
          */
-        UrlAuthorFlairMethodText(String url, String author, Flair flair, String method, String text) {
-            this.url = url;
-            this.author = author;
-            this.flair = flair;
+        private Date created;
+
+        /**
+         * Parameterized constructor
+         * @param submission A {@link Submission}
+         * @param method The method used to extract the text
+         * @param text A {@link String} of text
+         */
+
+        UrlAuthorFlairMethodText(Submission submission, String method, String text) {
+            this.url = submission.getUrl();
+            this.author = submission.getAuthor();
+            this.flair = submission.getSubmissionFlair();
             this.method = method;
             this.text = text;
+            this.created = submission.getCreated();
         }
 
         /**
@@ -291,6 +382,29 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
                     "================================================================================\n";
         }
 
+        /**
+         * Converts class instance into a {@link Map}
+         * @return A {@link Map} with url, flair, method, text length, and text of an instance.
+         */
+        public Map<String, String> toMap() {
+            Map<String, String> myMap = new HashMap<>();
+            myMap.put("url", this.url);
+            myMap.put("author", this.author);
+            myMap.put("created", this.created.toString());
+            myMap.put("flair", flair.getCssClass() + "\t" + flair.getText());
+            myMap.put("method", this.method);
+            myMap.put("text length", Integer.toString(this.text.length()));
+            myMap.put("text", this.text);
+            return myMap;
+        }
+
+        /**
+         * Converts class instance into a {@link JSONObject}
+         * @return A {@link JSONObject} with url, flair, method, text length, and text of an instance.
+         */
+        public JSONObject toJSONObject() {
+            return new JSONObject(this.toMap());
+        }
     }
 
 }
