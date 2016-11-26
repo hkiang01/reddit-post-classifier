@@ -1,35 +1,8 @@
 package com.cs410dso.postclassifier;
 
-import com.google.common.collect.ImmutableListMultimap;
-
 import com.cs410dso.postclassifier.ingestion.FilteredSubredditIngestion;
-
-import net.dean.jraw.models.Submission;
-
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.json.simple.JSONObject;
-
-import java.io.BufferedOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
-
-import jdk.nashorn.internal.parser.JSONParser;
-
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
-
 /**
  * App main
  */
@@ -39,6 +12,7 @@ public class App {
         listOfSubreddits.add("machinelearning");
         FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(listOfSubreddits, 50);
         ingestion.saveSubmissionAndMetadataAboveThresholdAsJson();
+
 
 //        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[*]");
 //        JavaSparkContext sc = new JavaSparkContext(conf);
