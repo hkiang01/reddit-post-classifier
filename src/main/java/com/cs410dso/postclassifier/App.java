@@ -20,8 +20,6 @@ public class App {
         listOfSubreddits.add("machinelearning");
         FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(listOfSubreddits, 1000);
 
-        System.out.println("is empty: " + ingestion.isDataEmpty());
-
         // the action to scrape and ingest
         if(ingestion.isDataEmpty()) {
             ingestion.saveSubmissionAndMetadataAboveThresholdAsJson();

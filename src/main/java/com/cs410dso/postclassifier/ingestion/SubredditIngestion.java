@@ -162,7 +162,7 @@ public class SubredditIngestion {
      * @return A {@link Collection} of {@link Submission}s
      */
     public ImmutableCollection<Submission> getSubmissions() {
-        if(this.submissions.isEmpty()) {
+        if(this.submissions == null || this.submissions.isEmpty()) {
             ingestSubmissions();
         }
         return this.submissions;
