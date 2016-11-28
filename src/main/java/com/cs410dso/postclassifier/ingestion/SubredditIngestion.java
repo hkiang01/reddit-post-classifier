@@ -1,17 +1,26 @@
 package com.cs410dso.postclassifier.ingestion;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.http.UserAgent;
 import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
+import net.dean.jraw.models.Listing;
+import net.dean.jraw.models.Submission;
+import net.dean.jraw.paginators.SubredditPaginator;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.spark_project.guava.collect.ImmutableList.of;
 
 /**
  * This class provides an easy way to ingest the contents of a given subreddit.
@@ -20,13 +29,148 @@ import java.util.Properties;
  */
 public class SubredditIngestion {
 
-    /** The subreddit to ingest */
-    private String subreddit;
+    /**
+     * The {@link RedditClient} used to facilitate the ingestion. Only 1 redditClient per user, a singleton.
+     */
+    private static RedditClient redditClient;
 
-    /** The {@link RedditClient} used to facilitate the ingestion */
-    private RedditClient redditClient;
+    /**
+     * The subreddit to ingest
+     */
+    private Collection<String> subreddits;
 
-    /** Used to fetch the project properties from pom.xml */
+    /**
+     * The combined subreddits, e.g., A+B is subreddit A and B
+     */
+    private String combinedSubreddits;
+
+    /**
+     * The number of submissions (posts) to ingest. See {@link SubredditPaginator}
+     */
+    private int limit = 25;
+
+    /**
+     * The {@link SubredditPaginator} used to facilitate the ingestion
+     */
+    private SubredditPaginator subredditPaginator;
+
+    /**
+     * A {@link ImmutableCollection} containing {@link Submission}s from the {@link SubredditPaginator}
+     */
+    private ImmutableCollection<Submission> submissions;
+
+    /**
+     * Instantiates a new SubredditIngestion
+     */
+    public SubredditIngestion() {
+        subredditIngestionConstructorHelper();
+    }
+
+    /**
+     * Instantiates a new SubredditIngestion
+     * @param subreddits A {@link Collection} of subreddits to ingest
+     * @param limit The number of {@link net.dean.jraw.models.Submission}s to ingest
+     */
+    public SubredditIngestion(Collection<String> subreddits, int limit) {
+        // generate the subredditPaginator
+        this.subreddits = subreddits;
+        this.limit = limit;
+        subredditIngestionConstructorHelper();
+    }
+
+    /**
+     * Facilitates the default and parameterized constructors for {@link #SubredditIngestion()}
+     */
+    private void subredditIngestionConstructorHelper() {
+        // Descriptive User-Agent header required by Reddit API (https://github.com/thatJavaNerd/JRAW/wiki/Quickstart)
+        UserAgent myUserAgent = createUserAgent();
+        redditClient = new RedditClient(myUserAgent);
+
+        // OAuth Credentials (https://thatjavanerd.github.io/JRAW/docs/latest/net/dean/jraw/http/oauth/Credentials.html)
+        Credentials credentials = getCredentials();
+        try {
+            OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
+            // notify the RedditClient that we have been authorized
+            redditClient.authenticate(authData);
+        } catch (OAuthException e) {
+            System.out.println("Invalid credentials in resources/credentials.json");
+            e.printStackTrace();
+        }
+        // generate the subredditPaginator
+        generateSubredditPaginator(this.limit);
+    }
+
+    /**
+     * Gets the reddicClient
+     * @return the {@link RedditClient} from this {{@link #SubredditIngestion()}}
+     */
+    public RedditClient getRedditClient() {
+        return redditClient;
+    }
+
+    /**
+     * Gets the username
+     * @return the username {@link String} from this {{@link #SubredditIngestion()}}
+     */
+    public String getUsername() {
+        return getCredentials().getUsername();
+    }
+
+    /**
+     * Gets subreddits of {{@link #SubredditIngestion()}}
+     * @return The {@link Collection} of {@link String}s of subreddits
+     */
+    public Collection<String> getSubreddits() {
+        return this.subreddits;
+    }
+
+    /**
+     * Gets the self domains of each subreddit in the {@link SubredditIngestion}
+     * @return a {@link Collection} of {@link String}s of self domains per subreddit
+     */
+    public Collection<String> getSubredditSelfDomains() {
+        Collection<String> selfSubreddits = this.getSubreddits().stream()
+                //.map(String::toLowerCase)
+                .map(e -> "self." + e)
+                .collect(Collectors.toCollection(TreeSet::new));
+        return selfSubreddits;
+    }
+
+    /** Adds to subreddits */
+
+    /**
+     * Adds to subreddits of {{@link #SubredditIngestion()}}
+     * @param  subreddit A {@link String} representing a subreddit to add
+     * @return A {@link SubredditPaginator} with subreddit added
+     */
+    public SubredditPaginator addSubreddit(String subreddit) {
+        this.subreddits.add(subreddit);
+        generateSubredditPaginator(this.limit);
+        return this.subredditPaginator;
+    }
+
+    /**
+     * Gets the {@link SubredditPaginator} of the {{@link #SubredditIngestion()}}
+     * @return The {@link SubredditPaginator}
+     */
+    public SubredditPaginator getSubredditPaginator() { return this.subredditPaginator; }
+
+    /** Gets the raw submissions */
+
+    /**
+     * Gets the raw {@link Submission}s of the {{@link #SubredditIngestion()}}
+     * @return A {@link Collection} of {@link Submission}s
+     */
+    public ImmutableCollection<Submission> getSubmissions() {
+        if(this.submissions.isEmpty()) {
+            ingestSubmissions();
+        }
+        return this.submissions;
+    }
+
+    /** Used to fetch the project properties from pom.xml
+     * @return A {@link ProjectProperties} object containing groupId, artifactId, and version as {@link String}s
+     */
     private ProjectProperties getProjectProperties() {
         // http://stackoverflow.com/questions/26551439/getting-maven-project-version-and-artifact-id-from-pom-while-running-in-eclipse
         final Properties properties = new Properties();
@@ -43,7 +187,10 @@ public class SubredditIngestion {
                 properties.getProperty("version"));
     }
 
-    /** Gets the credentials in order using {@link Credentials} */
+    /**
+     * Gets the credentials in order using {@link Credentials}
+     * @return The {@link Credentials} associated with the fields present in resources/credentials.json
+     */
     private Credentials getCredentials() {
         JSONParser parser = new JSONParser();
         String username = "";
@@ -74,68 +221,90 @@ public class SubredditIngestion {
         return Credentials.script(username, password, clientId, clientSecret);
     }
 
-    /** Creates the user agent using project properties in pom.xml */
+    /**
+     * Creates the user agent using project properties in pom.xml
+     * @return A {@link UserAgent} to facilitate the construction of a {{@link #SubredditIngestion()}}
+     */
     private UserAgent createUserAgent() {
         // get project properties
-        ProjectProperties projectProperties = getProjectProperties();
+        ProjectProperties projectProperties = this.getProjectProperties();
         String uniqueId = projectProperties.groupId + "." + projectProperties.artifactId;
 
         // get user name
-        Credentials credentials = getCredentials();
+        Credentials credentials = this.getCredentials();
         String username = credentials.getUsername();
 
         // instantiates the user agent
         return UserAgent.of("desktop", uniqueId, projectProperties.version, username);
     }
 
-    /** Instantiates a new SubredditIngestion for the given subreddit */
-    public SubredditIngestion(String subreddit) {
-
-        // class variable instantiation
-        this.subreddit = subreddit;
-
-        // Descriptive User-Agent header required by Reddit API (https://github.com/thatJavaNerd/JRAW/wiki/Quickstart)
-        UserAgent myUserAgent = createUserAgent();
-        redditClient = new RedditClient(myUserAgent);
-
-        // OAuth Credentials (https://thatjavanerd.github.io/JRAW/docs/latest/net/dean/jraw/http/oauth/Credentials.html)
-        Credentials credentials = getCredentials();
-        try {
-            OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
-            // notify the RedditClient that we have been authorized
-            redditClient.authenticate(authData);
-        } catch (OAuthException e) {
-            System.out.println("Invalid credentials in resources/credentials.json");
-            e.printStackTrace();
+    /**
+     * Retrieves subreddits as a combined {@link String} to facilitate the construction of a {@link #generateSubredditPaginator(int) generateSubredditPaginator}
+     * @return The combined {@link String} of subreddits
+     */
+    private String getSubredditsAsCombinedString() {
+        if(this.subreddits.isEmpty()) {
+            return "";
         }
-
+        else {
+            return this.subreddits.stream().reduce("", (a,b) -> a + "+" + b).substring(1);
+        }
     }
 
-    /** Gets the username **/
-    public String getUsername() {
-        return getCredentials().getUsername();
+    /**
+     * Sets the {@link SubredditPaginator} based on {@link #subreddits} using redditClient
+     * @param limit The number of submissions to ingest
+     */
+    private void generateSubredditPaginator(int limit) {
+        this.combinedSubreddits = getSubredditsAsCombinedString();
+        if(this.combinedSubreddits.isEmpty()) {
+            subredditPaginator = new SubredditPaginator(redditClient);
+        }
+        else {
+            subredditPaginator = new SubredditPaginator(redditClient, this.combinedSubreddits);
+        }
+        subredditPaginator.setLimit(limit);
     }
 
-    /** Gets the subreddit */
-    public String getSubreddit() {
-        return subreddit;
+    /**
+     * Ingests submissions from {@link #subredditPaginator} until there are at least
+     */
+    private void ingestSubmissions() {
+        Collection<Submission> listings = new ArrayList<>();
+        while(listings.size() < this.limit) {
+            listings.addAll(getSubredditPaginator().next());
+        }
+        System.out.println("listings has " + listings.size() + " submissions");
+        this.submissions = ImmutableList.copyOf(listings);
+        System.out.println("persisted " + this.submissions.size() + " submissions");
     }
 
-    /** Setse the subreddit */
-    public void setSubreddit(String subreddit) {
-        this.subreddit = subreddit;
-    }
-
-    public RedditClient getRedditClient() {
-        return this.redditClient;
-    }
-
-    /** Facilitates {@link #getProjectProperties() getProjectProperties} method */
+    /**
+     * Facilitates {@link #getProjectProperties() getProjectProperties} method
+     */
     private class ProjectProperties {
+
+        /**
+         * The groupId {2link String}
+         */
         private String groupId;
+
+        /**
+         * The artifactId {@link String}
+         */
         private String artifactId;
+
+        /**
+         * The version {@link String}
+         */
         private String version;
 
+        /**
+         * A parameterized constructor for {@link ProjectProperties}
+         * @param groupId a {@link String} representing the groupId
+         * @param artifactId a {@link String} representing the artifactId
+         * @param version a {@link String} representing the version
+         */
         ProjectProperties(String groupId, String artifactId, String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;

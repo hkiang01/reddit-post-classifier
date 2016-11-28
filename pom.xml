@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.0.1</spark.version>
+        <spark.version>2.0.2</spark.version>
         <jraw.version>0.9.0</jraw.version>
     </properties>
 
@@ -57,25 +57,56 @@
     </build>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11 -->
+        <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.6</version>
+        </dependency>
+        <dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11 -->
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.10</artifactId>
             <version>${spark.version}</version>
         </dependency>
-        <!-- https://bintray.com/thatjavanerd/maven/JRAW -->
         <dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.10 -->
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.10</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <!-- https://bintray.com/thatjavanerd/maven/JRAW -->
             <groupId>net.dean.jraw</groupId>
             <artifactId>JRAW</artifactId>
             <version>${jraw.version}</version>
             <!--<type>pom</type>-->
         </dependency>
-        <!-- https://code.google.com/archive/p/json-simple/ -->
-        <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
         <dependency>
+            <!-- https://code.google.com/archive/p/json-simple/ -->
+            <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <!-- https://github.com/google/guava -->
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>20.0</version>
+        </dependency>
+        <dependency>
+            <!-- https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.google.code.gson%22%20AND%20a%3A%22gson%22 -->
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+        <dependency>
+            <!-- https://tika.apache.org/1.14/gettingstarted.html -->
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>1.14</version>
         </dependency>
     </dependencies>
 
