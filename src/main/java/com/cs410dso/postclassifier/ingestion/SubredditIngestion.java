@@ -1,6 +1,7 @@
 package com.cs410dso.postclassifier.ingestion;
 
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.http.UserAgent;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.spark_project.guava.collect.ImmutableList.of;
 
 /**
  * This class provides an easy way to ingest the contents of a given subreddit.
@@ -95,9 +98,6 @@ public class SubredditIngestion {
         }
         // generate the subredditPaginator
         generateSubredditPaginator(this.limit);
-
-        // ingest submissions
-        ingestSubmissions();
     }
 
     /**
@@ -146,7 +146,6 @@ public class SubredditIngestion {
     public SubredditPaginator addSubreddit(String subreddit) {
         this.subreddits.add(subreddit);
         generateSubredditPaginator(this.limit);
-        ingestSubmissions();
         return this.subredditPaginator;
     }
 
@@ -163,6 +162,9 @@ public class SubredditIngestion {
      * @return A {@link Collection} of {@link Submission}s
      */
     public ImmutableCollection<Submission> getSubmissions() {
+        if(this.submissions == null || this.submissions.isEmpty()) {
+            ingestSubmissions();
+        }
         return this.submissions;
     }
 
@@ -265,11 +267,16 @@ public class SubredditIngestion {
     }
 
     /**
-     * Ingests submissions from {@link #subredditPaginator}
+     * Ingests submissions from {@link #subredditPaginator} until there are at least
      */
     private void ingestSubmissions() {
-        Listing<Submission> listing = this.getSubredditPaginator().next();
-        this.submissions = ImmutableSet.copyOf(listing);
+        Collection<Submission> listings = new ArrayList<>();
+        while(listings.size() < this.limit) {
+            listings.addAll(getSubredditPaginator().next());
+        }
+        System.out.println("listings has " + listings.size() + " submissions");
+        this.submissions = ImmutableList.copyOf(listings);
+        System.out.println("persisted " + this.submissions.size() + " submissions");
     }
 
     /**

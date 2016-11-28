@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.AutoDetectParser;
@@ -23,11 +22,12 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.json.simple.JSONObject;
+import org.mortbay.util.ajax.JSON;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,7 +42,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -59,7 +58,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     private static final String JUICER_PREPEND_URL = "https://juicer.herokuapp.com/api/article?url=";
 
-    private static final String JSON_PATH = "./data.json";
+    public static final String JSON_PATH = "./data.json";
 
     /**
      * The minimum length of a "valid" text file
@@ -119,6 +118,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     public ImmutableListMultimap<Boolean, Submission> getSubmissionsBySelf() {
         // Java stream tutorial examples: http://winterbe.com/posts/2014/07/31/java8-stream-tutorial-examples/
         ImmutableCollection<Submission> submissions = this.getSubmissions();
+        System.out.println("retrieved " + submissions.size() + " submissions");
         Collection<String> selfDomains = this.getSubredditSelfDomains();
         Collection<String> lowercaseSelfDomains = selfDomains.stream()
                 .map(String::toLowerCase)
@@ -138,6 +138,8 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     public Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> getSubmissionsAndMetadata() {
         ImmutableListMultimap<Boolean, Submission> submissions = getSubmissionsBySelf();
+        System.out.println("getting submission and metadata for " + submissions.size() + " submissions");
+
         return submissions.entries().parallelStream().map(e -> { // parallel streams
             Submission curSubmission = e.getValue();
             if (e.getKey()) { // if the entry's domain is from self.subreddit
@@ -260,6 +262,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     public Collection<JSONObject> getSubmissionAndMetadataAboveThreshold() {
         Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> entries = this.getSubmissionsAndMetadata();
+        System.out.println("filtering " + entries.size() + " entries");
         return entries.parallelStream()
                 .filter(e -> e.getValue().text.length() >= TEXT_THRESHOLD)
                 .map(e -> {
@@ -286,34 +289,66 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     }
 
     /**
+     * Similar to etSubmissionAndMetadataAboveThreshold but only with a key, text, and flair per entry
+     * @return the collection of {@link JSONObject} elements containing a key, some text, and flair
+     */
+    public Collection<JSONObject> getSubmissionAndMetadataAboveThresholdWithFilteredFields() {
+        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThreshold();
+        return posts.parallelStream().map(e -> {
+            JSONObject jsonObject = new JSONObject();
+            String key = getAuthorUnderscoreCreatedUniqueKey(e);
+            jsonObject.put("author", e.get("author"));
+            jsonObject.put("created", e.get("created"));
+            jsonObject.put("text", e.get("text"));
+            jsonObject.put("flair", e.get("flair"));
+            return jsonObject;
+        }).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
      * Writes posts with [author]_[created] as key and submission and associated metadata as value
      * in a single json file in JSON_PATH
      */
     public void saveSubmissionAndMetadataAboveThresholdAsJson() {
-        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThreshold();
+        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThresholdWithFilteredFields();
+        System.out.println("Saving " + posts.size() + " posts");
+
         Path p = Paths.get(JSON_PATH);
-        JSONObject combinedPosts = posts.stream().map(e -> {
-            // associated JSONObject with [author]_[created] as key
-            JSONObject jsonObject = new JSONObject();
-            String key = getAuthorUnderscoreCreatedUniqueKey(e);
-            System.out.println("key: " + key);
-            jsonObject.put(key, e);
-            return jsonObject;
-        }).reduce(new JSONObject(), (accumulator, e) -> {
-            // accumulate them all into a single JSONObject
-            String eKeySet = e.keySet().toString(); // there's only 1 key
-            String eKey = eKeySet.substring(1, eKeySet.length() - 1);
-            JSONObject eVal = (JSONObject) e.get(eKey);
-            accumulator.put(eKey, eVal);
-            return accumulator;
+        String combinedPosts = posts.stream().map(e -> e.toString())
+        .reduce("", (accumulator, e) -> {
+            // accumulate them all into a single String
+            return accumulator + "\n" + e;
         });
-        byte data[] = combinedPosts.toJSONString().getBytes();
+        byte data[] = combinedPosts.getBytes();
         try (OutputStream out = new BufferedOutputStream(
                 Files.newOutputStream(p, CREATE, APPEND))) {
             out.write(data, 0, data.length);
         } catch (IOException x) {
             x.printStackTrace();
         }
+    }
+
+    /**
+     * Gets the path to JSON_PATH readable by Spark using Spark 2.0.2's spark.read.json([the path])
+     * @return the path
+     */
+    public String getSparkDataPath() {
+        String path = "";
+        try {
+            path = "file://" + Paths.get(JSON_PATH).toRealPath().toString();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return path;
+    }
+
+    /**
+     * Checks to see whether JSON_DATA file is empty
+     * @return whether or not it's empty
+     */
+    public boolean isDataEmpty() {
+        File file = new File(JSON_PATH);
+        return !file.exists() || file.length() == 0;
     }
 
     /**
