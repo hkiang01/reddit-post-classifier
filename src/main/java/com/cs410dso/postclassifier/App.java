@@ -1,14 +1,14 @@
 package com.cs410dso.postclassifier;
 
 import com.cs410dso.postclassifier.ingestion.FilteredSubredditIngestion;
+import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
 import com.cs410dso.postclassifier.model.SubredditFlairModel;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
+import org.apache.spark.sql.*;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import org.apache.spark.ml.feature.RegexTokenizer;
 import org.apache.spark.ml.feature.Tokenizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
@@ -42,44 +41,39 @@ public class App {
         SparkSession spark = SparkSession.builder().appName("Reddit Post Classifier").master("local[4]").getOrCreate();
 
         // scrape and ingest
-        List<String> listOfSubreddits = new ArrayList<>();
-        listOfSubreddits.add("machinelearning");
-        SubredditFlairModel subredditFlairModel = new SubredditFlairModel(spark, listOfSubreddits, 1000);
+        LocalSubredditFlairModel subredditFlairModel = new LocalSubredditFlairModel(spark);
         Dataset<Row> data = subredditFlairModel.getProcessedWords();
         data.printSchema();
         data.show();
         System.out.println("number of entries: " + Long.toString(data.count()));
-        data.limit(1).toJavaRDD().foreach(f -> {
-            for(int i = 0; i < f.size(); i++) {
-                System.out.println(f.get(i).toString());
+
+        Dataset<Row> flairsDS = data.select("flair").dropDuplicates();
+        List<String> flairs = flairsDS.toJavaRDD().map(new Function<Row, String>() {
+            public String call(Row row) {
+                return row.toString();
             }
-        });
-//
-//        List<Row> data = Arrays.asList(
-//                RowFactory.create(0, "Hi I heard about Spark"),
-//                RowFactory.create(1, "I wish Java could use case classes"),
-//                RowFactory.create(2, "Logistic,regression,models,are,neat")
-//        );
-//
-//        StructType schema = new StructType(new StructField[]{
-//                new StructField("label", DataTypes.IntegerType, false, Metadata.empty()),
-//                new StructField("sentence", DataTypes.StringType, false, Metadata.empty())
-//        });
-//
-//        Dataset<Row> sentenceDataFrame = spark.createDataFrame(data, schema);
-//
-//        Tokenizer tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words");
-//
-//        Dataset<Row> wordsDataFrame = tokenizer.transform(sentenceDataFrame);
-//        for (Row r : wordsDataFrame.select("words", "label").takeAsList(3)) {
-//            java.util.List<String> words = r.getList(0);
-//            for (String word : words) System.out.print(word + " ");
-//            System.out.println();
-//        }
-//
-//        RegexTokenizer regexTokenizer = new RegexTokenizer()
-//                .setInputCol("sentence")
-//                .setOutputCol("words")
-//                .setPattern("\\W");  // alternatively .setPattern("\\w+").setGaps(false);
+        }).collect();
+        flairs.forEach(f -> System.out.println(f));
+
+        // for each flair, get the concatenated text from all posts
+        // https://stackoverflow.com/questions/34150547/spark-group-concat-equivalent-in-scala-rdd
+        // https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/sql/functions.html#concat_ws(java.lang.String,%20org.apache.spark.sql.Column...)
+        data.registerTempTable("data");
+        final Dataset<Row> flairAndConcatText = spark.sql(
+                "SELECT " +
+                        "flair, " +
+                        "concat_ws( ' ', collect_list(text)) AS concat_text " +
+                        "FROM data " +
+                        "GROUP BY flair");
+        flairAndConcatText.show();
+
+        // get the words out
+        // https://spark.apache.org/docs/latest/ml-features.html#tokenizer
+        Tokenizer tokenizer = new Tokenizer().setInputCol("concat_text").setOutputCol("words");
+        final Dataset<Row> flairAndWords = tokenizer.transform(flairAndConcatText);
+
+        flairAndWords.printSchema();
+        flairAndWords.show();
+
     }
 }
