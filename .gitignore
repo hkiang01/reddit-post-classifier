@@ -14,4 +14,4 @@ target/
 src/main/resources/credentials.json
 
 # data
-data.json
+*.json
