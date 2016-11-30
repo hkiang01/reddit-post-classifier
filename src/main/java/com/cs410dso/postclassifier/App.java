@@ -4,7 +4,6 @@ import com.cs410dso.postclassifier.model.SubredditFlairModel;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.ml.feature.CountVectorizer;
 import org.apache.spark.ml.feature.CountVectorizerModel;
@@ -15,19 +14,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Decimal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import scala.Function1;
-import scala.Option;
-import scala.Tuple2;
-import scala.collection.Iterable;
+import scala.collection.JavaConversions;
 
 /**
  * App main
@@ -150,23 +140,19 @@ public class App {
          +-----+--------------------+--------------------+--------------------+--------------------+
          */
 
-        UDF1 statisicalLMFromWordFreq = new UDF1<scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>>() {
-            public scala.collection.immutable.HashMap<String, Double> call(scala.collection.immutable.HashMap<String, Double> wordFreq) {
-//                final double sum = wordFreq.values().stream().mapToDouble(Double::doubleValue).sum();
-//                Map<String, Double> myMap = new HashMap<String, Double>();
-//                wordFreq.forEach( (word, freq) -> {
-//                    myMap.put(word, freq/sum);
-//                });
-//                return myMap;
-//                final Double sum = wordFreq.values().reduce((Double e1, Double e2) -> e1 + e2);
-//                scala.collection.mutable.HashMap<String, Double> myMap = new scala.collection.mutable.HashMap<String, Double>();
-//                wordFreq.keys().toList().foreach(new ForeachFunction<String>() {
-//                    public void call(String word) {
-//                        Double doubleOption = wordFreq.get(word).get();
-//                        myMap.put()
-//                    }
-//                });
-                return wordFreq;
+        // UDF for statistical language model
+        UDF1 statisicalLMFromWordFreq = new UDF1<scala.collection.immutable.HashMap<String, Double>, scala.collection.mutable.HashMap<String, Double>>() {
+            public scala.collection.mutable.HashMap<String, Double> call(scala.collection.immutable.HashMap<String, Double> wordFreq) {
+                List<Double> valuesList = JavaConversions.asJavaList(wordFreq.values().toList());
+                Double sum = valuesList.stream().mapToDouble(Double::doubleValue).sum();
+                scala.collection.mutable.HashMap<String, Double> myMap = new scala.collection.mutable.HashMap<String, Double>();
+                final Map<String, Double> javaMap = JavaConversions.mapAsJavaMap(wordFreq);
+                javaMap.keySet().forEach(word -> {
+                    Double freq = javaMap.get(word);
+                    Double newFreq = freq / sum; // the main logic
+                    myMap.put(word, newFreq);
+                });
+                return myMap;
             }
         };
 
@@ -187,6 +173,13 @@ public class App {
         // resultant word count
         withSLM.printSchema();
         withSLM.show();
+
+        Iterator<Row> rowIterator = withSLM.toJavaRDD().toLocalIterator();
+        rowIterator.forEachRemaining(row -> {
+            System.out.println("flair: " + row.get(0));
+            System.out.println("statistical_lm: " + row.get(5));
+        });
+
     }
 
 }
