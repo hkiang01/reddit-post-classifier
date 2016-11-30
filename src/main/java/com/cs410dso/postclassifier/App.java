@@ -4,6 +4,7 @@ import com.cs410dso.postclassifier.model.SubredditFlairModel;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.ml.feature.CountVectorizer;
 import org.apache.spark.ml.feature.CountVectorizerModel;
@@ -14,6 +15,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Decimal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +23,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import scala.Function1;
+import scala.Option;
+import scala.Tuple2;
+import scala.collection.Iterable;
 
 /**
  * App main
@@ -109,10 +116,6 @@ public class App {
                 for(int i = 0; i < length; i++) {
                     myMap.put(vocabulary[i], values[i]);
                 }
-//                Arrays.stream(indices).forEachOrdered(i -> {
-//                    String vocabWord = vocabulary[i];
-//                    myMap.put(vocabWord, values[i]);
-//                });
                 return myMap;
             }
         };
@@ -129,7 +132,7 @@ public class App {
                         "wordFreqFromCountVectorizerModel(features) AS freq " +
                         "FROM counted "
         );
-
+        spark.sqlContext().dropTempTable("counted");
         // resultant word count
         withFreq.printSchema();
         withFreq.show();
@@ -147,6 +150,43 @@ public class App {
          +-----+--------------------+--------------------+--------------------+--------------------+
          */
 
+        UDF1 statisicalLMFromWordFreq = new UDF1<scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>>() {
+            public scala.collection.immutable.HashMap<String, Double> call(scala.collection.immutable.HashMap<String, Double> wordFreq) {
+//                final double sum = wordFreq.values().stream().mapToDouble(Double::doubleValue).sum();
+//                Map<String, Double> myMap = new HashMap<String, Double>();
+//                wordFreq.forEach( (word, freq) -> {
+//                    myMap.put(word, freq/sum);
+//                });
+//                return myMap;
+//                final Double sum = wordFreq.values().reduce((Double e1, Double e2) -> e1 + e2);
+//                scala.collection.mutable.HashMap<String, Double> myMap = new scala.collection.mutable.HashMap<String, Double>();
+//                wordFreq.keys().toList().foreach(new ForeachFunction<String>() {
+//                    public void call(String word) {
+//                        Double doubleOption = wordFreq.get(word).get();
+//                        myMap.put()
+//                    }
+//                });
+                return wordFreq;
+            }
+        };
+
+        // the SQL query for word counts
+        withFreq.registerTempTable("withFreq");
+        spark.sqlContext().udf().register("statisicalLMFromWordFreq", statisicalLMFromWordFreq, DataTypes.createMapType(DataTypes.StringType, DataTypes.DoubleType));
+        final Dataset<Row> withSLM = spark.sql(
+                "SELECT " +
+                        "flair, " +
+                        "concat_text, " +
+                        "words, " +
+                        "features, " +
+                        "freq, " +
+                        "statisicalLMFromWordFreq(freq) AS statistical_lm " +
+                        "FROM withFreq "
+        );
+        spark.sqlContext().dropTempTable("withFreq");
+        // resultant word count
+        withSLM.printSchema();
+        withSLM.show();
     }
 
 }
