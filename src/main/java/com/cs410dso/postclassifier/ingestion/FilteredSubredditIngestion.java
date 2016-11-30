@@ -426,7 +426,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
             myMap.put("url", this.url);
             myMap.put("author", this.author);
             myMap.put("created", this.created.toString());
-            myMap.put("flair", flair.getCssClass() + "\t" + flair.getText());
+            myMap.put("flair", flair.getCssClass());
             myMap.put("method", this.method);
             myMap.put("text length", Integer.toString(this.text.length()));
             myMap.put("text", this.text);

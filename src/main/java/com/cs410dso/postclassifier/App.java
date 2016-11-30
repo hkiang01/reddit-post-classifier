@@ -1,8 +1,12 @@
 package com.cs410dso.postclassifier;
 
 import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
+import com.cs410dso.postclassifier.model.SubredditFlairModel;
+
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.spark.ml.feature.RegexTokenizer;
 import org.apache.spark.sql.Dataset;
@@ -13,12 +17,13 @@ import org.apache.spark.sql.Row;
 public class App {
     public static void main(String[] args) {
 
-
         // Spark setup
         SparkSession spark = SparkSession.builder().appName("Reddit Post Classifier").master("local[4]").getOrCreate();
 
         // scrape and ingest
-        LocalSubredditFlairModel subredditFlairModel = new LocalSubredditFlairModel(spark);
+        ArrayList<String> listOfSubreddits = new ArrayList();
+        listOfSubreddits.add("machinelearning");
+        SubredditFlairModel subredditFlairModel = new SubredditFlairModel(spark, listOfSubreddits, 1000);
         Dataset<Row> data = subredditFlairModel.getProcessedWords();
         data.printSchema();
         data.show();
@@ -47,7 +52,7 @@ public class App {
 
         // get the words out
         // https://spark.apache.org/docs/latest/ml-features.html#tokenizer
-        // `\\W` pattern is a nonword character: [^A-Za-z0-9_]
+        // `\\W` pattern is a nonword character: [^A-Za-z0-9_] (see https://www.tutorialspoint.com/scala/scala_regular_expressions.htm)
         // this transform also forces lower case
         RegexTokenizer tokenizer = new RegexTokenizer().setInputCol("concat_text").setOutputCol("words").setPattern("\\W");
         final Dataset<Row> flairAndWords = tokenizer.transform(flairAndConcatText);
@@ -68,7 +73,6 @@ public class App {
          I am usi...|[my, data, i, am,...|
          +---------------+--------------------+--------------------+
          */
-
 
 
     }
