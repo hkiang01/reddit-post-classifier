@@ -1,35 +1,12 @@
 package com.cs410dso.postclassifier;
 
-import com.cs410dso.postclassifier.ingestion.FilteredSubredditIngestion;
 import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
-import com.cs410dso.postclassifier.model.SubredditFlairModel;
-
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.*;
-import org.json.simple.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.spark.ml.feature.RegexTokenizer;
-import org.apache.spark.ml.feature.Tokenizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
-
-import scala.Function1;
-import scala.runtime.BoxedUnit;
-
 /**
  * App main
  */
@@ -47,6 +24,7 @@ public class App {
         data.show();
         System.out.println("number of entries: " + Long.toString(data.count()));
 
+        // what flairs do we have?
         Dataset<Row> flairsDS = data.select("flair").dropDuplicates();
         List<String> flairs = flairsDS.toJavaRDD().map(new Function<Row, String>() {
             public String call(Row row) {
@@ -69,11 +47,29 @@ public class App {
 
         // get the words out
         // https://spark.apache.org/docs/latest/ml-features.html#tokenizer
-        Tokenizer tokenizer = new Tokenizer().setInputCol("concat_text").setOutputCol("words");
+        // `\\W` pattern is a nonword character: [^A-Za-z0-9_]
+        // this transform also forces lower case
+        RegexTokenizer tokenizer = new RegexTokenizer().setInputCol("concat_text").setOutputCol("words").setPattern("\\W");
         final Dataset<Row> flairAndWords = tokenizer.transform(flairAndConcatText);
 
         flairAndWords.printSchema();
         flairAndWords.show();
+        /**
+         * Example:
+         * +---------------+--------------------+--------------------+
+         |          flair|         concat_text|               words|
+         +---------------+--------------------+--------------------+
+         | one	Discussion|I need help findi...|[i, need, help, f...|
+         | three	Research| 5 algorithms to ...|[5, algorithms, t...|
+         |one	Discusssion|For example, if y...|[for, example, if...|
+         |   four	Project| ヤロミル about AI Sk...|[about, ai, skip,...|
+         |       two	News| Home Moments Sea...|[home, moments, s...|
+         |      null	null|My data:
+         I am usi...|[my, data, i, am,...|
+         +---------------+--------------------+--------------------+
+         */
+
+
 
     }
 }
