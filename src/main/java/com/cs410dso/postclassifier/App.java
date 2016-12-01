@@ -1,5 +1,6 @@
 package com.cs410dso.postclassifier;
 
+import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
 import com.cs410dso.postclassifier.model.SubredditFlairModel;
 
 import com.cs410dso.postclassifier.model.TwoString;
@@ -39,6 +40,7 @@ import org.apache.spark.sql.types.StructType;
 import org.codehaus.janino.Java;
 import scala.Array;
 import scala.Function1;
+import scala.Tuple2;
 import scala.collection.Iterable;
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
@@ -60,17 +62,58 @@ public class App {
         // https://stackoverflow.com/questions/31951728/how-to-set-up-logging-level-for-spark-application-in-intellij-idea
         LogManager.getRootLogger().setLevel(Level.ERROR); // hide INFO
 
-        // scrape and ingest
+        // scrape and in¡gest
         ArrayList<String> listOfSubreddits = new ArrayList();
         listOfSubreddits.add("machinelearning");
-        SubredditFlairModel subredditFlairModel = new SubredditFlairModel(spark, listOfSubreddits, 1000);
-        Dataset<Row> data = subredditFlairModel.getProcessedWords();
+//        SubredditFlairModel subredditFlairModel = new SubredditFlairModel(spark, listOfSubreddits, 1000);
+         LocalSubredditFlairModel subredditFlairModel = new LocalSubredditFlairModel(spark); // change to this if behind corporate firewall and you have data.json
+        Dataset<Row> dataRawWithNull = subredditFlairModel.getProcessedWords();
+        Dataset<Row> dataRaw = dataRawWithNull.where(dataRawWithNull.col("flair").isNotNull()); // filter out null flairs or flairs that don't have css
+        dataRaw.printSchema();
+        dataRaw.show();
+        System.out.println("number of entries: " + Long.toString(dataRaw.count()));
+
+        final CountVectorizerModel dataCVModel = new CountVectorizer().setInputCol("words").setOutputCol("words_features").fit(dataRaw);
+        final Dataset<Row> withWordsFeatures = dataCVModel.transform(dataRaw);
+        withWordsFeatures.printSchema();
+        withWordsFeatures.show();
+
+        // the UDF for word counts
+        final String[] postVocab = dataCVModel.vocabulary();
+        UDF1 postWordFreqFromCountVectorizerModel = new UDF1<SparseVector, Map<String, Double>>() {
+            public Map<String, Double> call(SparseVector v) {
+                SparseVector sv = v.toSparse();
+                int length = sv.indices().length;
+                final double[] values = sv.values();
+                Map<String, Double> myMap = new HashMap<>();
+                for(int i = 0; i < length; i++) {
+                    myMap.put(postVocab[i], values[i]);
+                }
+                return myMap;
+            }
+        };
+        spark.sqlContext().udf().register("postWordFreqFromCountVectorizerModel", postWordFreqFromCountVectorizerModel, DataTypes.createMapType(DataTypes.StringType, DataTypes.DoubleType));
+
+        // the SQL query for word counts
+        withWordsFeatures.registerTempTable("withWordsFeatures");
+        final Dataset<Row> data = spark.sql(
+                "SELECT " +
+                        "author, " +
+                        "created, " +
+                        "flair, " +
+                        "text, " +
+                        "words, " +
+                        "words_features, " +
+                        "postWordFreqFromCountVectorizerModel(words_features) AS words_freq " +
+                        "FROM withWordsFeatures"
+        );
+        spark.sqlContext().dropTempTable("withWordsFeatures");
+        // resultant word count
         data.printSchema();
         data.show();
-        System.out.println("number of entries: " + Long.toString(data.count()));
 
         // what flairs do we have?
-        Dataset<Row> flairsDS = data.select("flair").dropDuplicates();
+        Dataset<Row> flairsDS = dataRaw.select("flair").dropDuplicates();
         List<String> flairs = flairsDS.toJavaRDD().map(new Function<Row, String>() {
             public String call(Row row) {
                 return row.toString();
@@ -81,14 +124,14 @@ public class App {
         // for each flair, get the concatenated text from all posts
         // https://stackoverflow.com/questions/34150547/spark-group-concat-equivalent-in-scala-rdd
         // https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/sql/functions.html#concat_ws(java.lang.String,%20org.apache.spark.sql.Column...)
-        data.registerTempTable("data");
+        dataRaw.registerTempTable("dataRaw");
         final Dataset<Row> flairAndConcatText = spark.sql(
                 "SELECT " +
                         "flair, " +
                         "concat_ws( ' ', collect_list(text)) AS concat_text " +
-                        "FROM data " +
+                        "FROM dataRaw " +
                         "GROUP BY flair");
-        spark.sqlContext().dropTempTable("data");
+        spark.sqlContext().dropTempTable("dataRaw");
         flairAndConcatText.show();
 
         // get the combined text of all posts
@@ -147,10 +190,6 @@ public class App {
         counted.printSchema();
         counted.show();
 
-        // debugging
-        int vocabLength = cvModel.vocabulary().length;
-        System.out.println("vocab length: " + vocabLength);
-
         // the UDF for word counts
         final String[] vocabulary = cvModel.vocabulary();
         UDF1 wordFreqFromCountVectorizerModel = new UDF1<SparseVector, Map<String, Double>>() {
@@ -165,17 +204,21 @@ public class App {
                 return myMap;
             }
         };
+        spark.sqlContext().udf().register("wordFreqFromCountVectorizerModel", wordFreqFromCountVectorizerModel, DataTypes.createMapType(DataTypes.StringType, DataTypes.DoubleType));
+
+        // debugging
+        int vocabLength = cvModel.vocabulary().length;
+        System.out.println("vocab length: " + vocabLength);
 
         // the SQL query for word counts
         counted.registerTempTable("counted");
-        spark.sqlContext().udf().register("wordFreqFromCountVectorizerModel", wordFreqFromCountVectorizerModel, DataTypes.createMapType(DataTypes.StringType, DataTypes.DoubleType));
         final Dataset<Row> withFreq = spark.sql(
                 "SELECT " +
                         "flair, " +
                         "concat_text, " +
                         "words, " +
                         "features, " +
-                        "wordFreqFromCountVectorizerModel(features) AS freq, " +
+                        "wordFreqFromCountVectorizerModel(features) AS model_freq, " +
                         "background_text, " +
                         "background_words, " +
                         "background_features, " +
@@ -190,8 +233,6 @@ public class App {
 
         /**
          * Example:
-
-
          +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
          |flair|         concat_text|               words|            features|                freq|     background_text|    background_words| background_features|     background_freq|
          +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
@@ -228,8 +269,8 @@ public class App {
                         "concat_text, " +
                         "words, " +
                         "features, " +
-                        "freq, " +
-                        "statisicalLMFromWordFreq(freq) AS statistical_lm, " +
+                        "model_freq, " +
+                        "statisicalLMFromWordFreq(model_freq) AS statistical_lm, " +
                         "background_text, " +
                         "background_words, " +
                         "background_features, " +
@@ -281,41 +322,39 @@ public class App {
                             "data.author, " +
                             "data.text, " +
                             "data.words, " +
+                            "data.words_freq, " +
                             "models.* " +
                         "FROM data CROSS JOIN models"
         );
+        spark.sqlContext().dropTempTable("models");
         crossJoined.printSchema();
         crossJoined.orderBy("author", "created", "flair").show();
 
         // UDF to calculate score according to
-        UDF4 calculateScores = new UDF4<Seq<String>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, BigDecimal, Double> () {
-            public Double call (Seq<String> words, scala.collection.immutable.HashMap<String, Double> statistical_lm, scala.collection.immutable.HashMap<String, Double> background_lm, BigDecimal lambda) {
+        UDF4 calculateScores = new UDF4<scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, BigDecimal, Double> () {
+            public Double call (scala.collection.immutable.HashMap<String, Double> wordFreq, scala.collection.immutable.HashMap<String, Double> statistical_lm, scala.collection.immutable.HashMap<String, Double> background_lm, BigDecimal lambda) {
                 assert lambda.doubleValue() >= 0.0 && lambda.doubleValue() <= 1.0;
-                Map<String, Integer> postCount = new HashMap<String, Integer>();
-                final Collection<String> wordsColl = JavaConversions.asJavaCollection(words);
-                for(String curWord : wordsColl) {
-                    Integer curCount = postCount.getOrDefault(curWord, 0);
-                    postCount.put(curWord, curCount + 1);
-                }
-                Double docSize = (double) words.size();
-                Double sum = 0d;
+                final Map<String, Double> wordMap = JavaConversions.asJavaMap(wordFreq);
+                Double docSize = wordMap.values().stream().mapToDouble(Double::doubleValue).sum();
                 Double alpha = lambda.doubleValue();
                 final Map<String, Double> javaStatisticalLM = JavaConversions.asJavaMap(statistical_lm);
                 final Map<String, Double> javaBackgroundModel = JavaConversions.asJavaMap(background_lm);
 
-                for(Map.Entry<String, Integer> entry : postCount.entrySet()) {
+                final Double sum = wordMap.entrySet().parallelStream().map(entry -> {
                     String curWord = entry.getKey();
-                    Double cwd = entry.getValue().doubleValue();
+                    Double cwd = entry.getValue();
                     Double pwd = javaStatisticalLM.getOrDefault(curWord, 0d);
                     Double pwc = javaBackgroundModel.getOrDefault(curWord, 0d);
-                    if(pwc != 0) {
+                    if (pwc != 0) {
                         Double score = (((1.0d - alpha) * pwd) + (alpha * pwc)) / (alpha * pwc);
 //                        System.out.println("score: " + score);
                         Double addedend = Math.log(score);
 //                        System.out.println("addedend: " + addedend);
-                        sum += addedend;
-                    }
-                }
+                        return addedend;
+                    } else return 0.0d;
+                }).reduce((a, b) -> {
+                    return a + b;
+                }).orElse(0.0);
 
                 return sum;
             }
@@ -330,14 +369,16 @@ public class App {
                         "author, " +
                         "text, " +
                         "words, " +
+                        "words_freq, " +
                         "flair, " +
                         "statistical_lm, " +
                         "background_statistical_lm," +
-                        "calculateScores(words, statistical_lm, background_statistical_lm, 0.5) AS score " +
+                        "calculateScores(words_freq, statistical_lm, background_statistical_lm, 0.5) AS score " +
                         "FROM crossJoined"
         );
+        spark.sqlContext().dropTempTable("crossJoined");
         withScores.printSchema();
-        withScores.orderBy("created", "author", "label").show();
+        withScores.orderBy("created", "author", "flair").show();
 
         /**
          *
@@ -368,7 +409,11 @@ public class App {
          +-----+--------------------+--------------+--------------------+--------------------+-----+--------------------+-------------------------+------------------+
          */
 
-        
+        final Dataset<Row> toPredict = withScores.select("label", "created", "author", "text", "flair", "score");
+        toPredict.printSchema();
+        toPredict.orderBy("created", "author", "text", "flair").show();
+
+
     }
 
 }
