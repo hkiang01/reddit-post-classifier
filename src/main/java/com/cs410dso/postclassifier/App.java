@@ -7,6 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.MapFunction;
@@ -27,10 +28,12 @@ import org.apache.spark.sql.expressions.Window;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.apache.spark.sql.types.StructType;
 import org.codehaus.janino.Java;
@@ -285,12 +288,87 @@ public class App {
         crossJoined.orderBy("author", "created", "flair").show();
 
         // UDF to calculate score according to
-        UDF4 calculateScores = new UDF4<Array<String>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, Double, Double> () {
-            public Double call (Array<String> words, scala.collection.immutable.HashMap<String, Double> statistical_lm, scala.collection.immutable.HashMap<String, Double> background_lm, Double lambda) {
+        UDF4 calculateScores = new UDF4<Seq<String>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, BigDecimal, Double> () {
+            public Double call (Seq<String> words, scala.collection.immutable.HashMap<String, Double> statistical_lm, scala.collection.immutable.HashMap<String, Double> background_lm, BigDecimal lambda) {
+                assert lambda.doubleValue() >= 0.0 && lambda.doubleValue() <= 1.0;
+                Map<String, Integer> postCount = new HashMap<String, Integer>();
+                final Collection<String> wordsColl = JavaConversions.asJavaCollection(words);
+                for(String curWord : wordsColl) {
+                    Integer curCount = postCount.getOrDefault(curWord, 0);
+                    postCount.put(curWord, curCount + 1);
+                }
+                Double docSize = (double) words.size();
+                Double sum = 0d;
+                Double alpha = lambda.doubleValue();
+                final Map<String, Double> javaStatisticalLM = JavaConversions.asJavaMap(statistical_lm);
+                final Map<String, Double> javaBackgroundModel = JavaConversions.asJavaMap(background_lm);
 
-                return 0.0d;
+                for(Map.Entry<String, Integer> entry : postCount.entrySet()) {
+                    String curWord = entry.getKey();
+                    Double cwd = entry.getValue().doubleValue();
+                    Double pwd = javaStatisticalLM.getOrDefault(curWord, 0d);
+                    Double pwc = javaBackgroundModel.getOrDefault(curWord, 0d);
+                    if(pwc != 0) {
+                        Double score = (((1.0d - alpha) * pwd) + (alpha * pwc)) / (alpha * pwc);
+//                        System.out.println("score: " + score);
+                        Double addedend = Math.log(score);
+//                        System.out.println("addedend: " + addedend);
+                        sum += addedend;
+                    }
+                }
+
+                return sum;
             }
         };
+        spark.sqlContext().udf().register("calculateScores", calculateScores, DataTypes.DoubleType);
+
+        crossJoined.registerTempTable("crossJoined");
+        final Dataset<Row> withScores = spark.sql(
+                "SELECT " +
+                        "label, " +
+                        "created, " +
+                        "author, " +
+                        "text, " +
+                        "words, " +
+                        "flair, " +
+                        "statistical_lm, " +
+                        "background_statistical_lm," +
+                        "calculateScores(words, statistical_lm, background_statistical_lm, 0.5) AS score " +
+                        "FROM crossJoined"
+        );
+        withScores.printSchema();
+        withScores.orderBy("created", "author", "label").show();
+
+        /**
+         *
+
+         +-----+--------------------+--------------+--------------------+--------------------+-----+--------------------+-------------------------+------------------+
+         |label|             created|        author|                text|               words|flair|      statistical_lm|background_statistical_lm|             score|
+         +-----+--------------------+--------------+--------------------+--------------------+-----+--------------------+-------------------------+------------------+
+         |three|Fri Nov 04 07:40:...|  hammertime89| Cornell Universi...|[, cornell, unive...| null|Map(serious -> 3....|     Map(demsar -> 1.9...| 90.90154703673522|
+         |three|Fri Nov 04 07:40:...|  hammertime89| Cornell Universi...|[, cornell, unive...|  two|Map(serious -> 2....|     Map(demsar -> 1.9...| 84.72424611860446|
+         |three|Fri Nov 04 07:40:...|  hammertime89| Cornell Universi...|[, cornell, unive...| four|Map(serious -> 2....|     Map(demsar -> 1.9...| 88.04747036542118|
+         |three|Fri Nov 04 07:40:...|  hammertime89| Cornell Universi...|[, cornell, unive...|three|Map(mikhailfranco...|     Map(demsar -> 1.9...| 98.54578536339372|
+         |three|Fri Nov 04 07:40:...|  hammertime89| Cornell Universi...|[, cornell, unive...|  one|Map(serious -> 2....|     Map(demsar -> 1.9...| 85.26444695593501|
+         |three|Fri Nov 04 12:06:...|   schorschico|What do you get i...|[what, do, you, g...| null|Map(serious -> 3....|     Map(demsar -> 1.9...|170.05650644612666|
+         |three|Fri Nov 04 12:06:...|   schorschico|What do you get i...|[what, do, you, g...|  two|Map(serious -> 2....|     Map(demsar -> 1.9...|167.30822824110592|
+         |three|Fri Nov 04 12:06:...|   schorschico|What do you get i...|[what, do, you, g...|  one|Map(serious -> 2....|     Map(demsar -> 1.9...|171.80117704969126|
+         |three|Fri Nov 04 12:06:...|   schorschico|What do you get i...|[what, do, you, g...|three|Map(mikhailfranco...|     Map(demsar -> 1.9...|165.39333249714736|
+         |three|Fri Nov 04 12:06:...|   schorschico|What do you get i...|[what, do, you, g...| four|Map(serious -> 2....|     Map(demsar -> 1.9...|164.70882456690825|
+         |  two|Fri Nov 04 12:49:...|julian88888888| 3/4 Free Article...|[, 3/4, free, art...|  one|Map(serious -> 2....|     Map(demsar -> 1.9...|307.01418567381796|
+         |  two|Fri Nov 04 12:49:...|julian88888888| 3/4 Free Article...|[, 3/4, free, art...|  two|Map(serious -> 2....|     Map(demsar -> 1.9...|  311.653568073366|
+         |  two|Fri Nov 04 12:49:...|julian88888888| 3/4 Free Article...|[, 3/4, free, art...| four|Map(serious -> 2....|     Map(demsar -> 1.9...| 305.7219042038655|
+         |  two|Fri Nov 04 12:49:...|julian88888888| 3/4 Free Article...|[, 3/4, free, art...| null|Map(serious -> 3....|     Map(demsar -> 1.9...|333.85206362931285|
+         |  two|Fri Nov 04 12:49:...|julian88888888| 3/4 Free Article...|[, 3/4, free, art...|three|Map(mikhailfranco...|     Map(demsar -> 1.9...|316.51151044154506|
+         |  two|Fri Nov 04 14:48:...|       afeder_| Home Research Pu...|[, home, research...| four|Map(serious -> 2....|     Map(demsar -> 1.9...|239.99699899797253|
+         |  two|Fri Nov 04 14:48:...|       afeder_| Home Research Pu...|[, home, research...| null|Map(serious -> 3....|     Map(demsar -> 1.9...|250.58310922197492|
+         |  two|Fri Nov 04 14:48:...|       afeder_| Home Research Pu...|[, home, research...|  two|Map(serious -> 2....|     Map(demsar -> 1.9...|251.78605409480156|
+         |  two|Fri Nov 04 14:48:...|       afeder_| Home Research Pu...|[, home, research...|three|Map(mikhailfranco...|     Map(demsar -> 1.9...|242.97494508230773|
+         |  two|Fri Nov 04 14:48:...|       afeder_| Home Research Pu...|[, home, research...|  one|Map(serious -> 2....|     Map(demsar -> 1.9...|243.05419017767218|
+         +-----+--------------------+--------------+--------------------+--------------------+-----+--------------------+-------------------------+------------------+
+         */
+
+        
     }
 
 }
