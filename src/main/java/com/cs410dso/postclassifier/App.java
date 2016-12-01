@@ -18,6 +18,8 @@ import org.apache.spark.ml.feature.RegexTokenizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF1;
+import org.apache.spark.sql.api.java.UDF3;
+import org.apache.spark.sql.api.java.UDF4;
 import org.apache.spark.sql.expressions.WindowSpec;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.expressions.Window;
@@ -32,6 +34,7 @@ import java.util.*;
 
 import org.apache.spark.sql.types.StructType;
 import org.codehaus.janino.Java;
+import scala.Array;
 import scala.Function1;
 import scala.collection.Iterable;
 import scala.collection.JavaConversions;
@@ -280,6 +283,14 @@ public class App {
         );
         crossJoined.printSchema();
         crossJoined.orderBy("author", "created", "flair").show();
+
+        // UDF to calculate score according to
+        UDF4 calculateScores = new UDF4<Array<String>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, Double, Double> () {
+            public Double call (Array<String> words, scala.collection.immutable.HashMap<String, Double> statistical_lm, scala.collection.immutable.HashMap<String, Double> background_lm, Double lambda) {
+
+                return 0.0d;
+            }
+        };
     }
 
 }
