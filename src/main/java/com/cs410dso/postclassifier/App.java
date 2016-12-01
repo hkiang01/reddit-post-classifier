@@ -22,6 +22,12 @@ import org.apache.spark.sql.expressions.WindowSpec;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.expressions.Window;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.apache.spark.sql.types.StructType;
@@ -32,6 +38,9 @@ import scala.collection.JavaConversions;
 import scala.collection.Seq;
 
 import org.apache.spark.sql.SQLImplicits.*;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 
 /**
  * App main
@@ -227,12 +236,50 @@ public class App {
         withSLM.printSchema();
         withSLM.show();
 
+        // ta-dah!
         Iterator<Row> rowIterator = withSLM.toJavaRDD().toLocalIterator();
         Row row = rowIterator.next();
         System.out.println("flair: " + row.get(0));
         System.out.println("statistical_lm: " + row.get(5));
         System.out.println("background_statistical_lm: " + row.get(10));
 
+        /**
+         * +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+-------------------------+
+         |flair|         concat_text|               words|            features|                freq|      statistical_lm|     background_text|    background_words| background_features|     background_freq|background_statistical_lm|
+         +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+-------------------------+
+         |  two|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(serious -> 1....|Map(serious -> 2....|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(demsar -> 1.0...|     Map(demsar -> 1.9...|
+         | null|Hi, so I actually...|[hi, so, i, actua...|(24368,[0,1,2,3,4...|Map(serious -> 3....|Map(serious -> 3....|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(demsar -> 1.0...|     Map(demsar -> 1.9...|
+         | four|This is a TensorF...|[this, is, a, ten...|(24368,[0,1,2,3,4...|Map(serious -> 2....|Map(serious -> 2....|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(demsar -> 1.0...|     Map(demsar -> 1.9...|
+         |  one|I have implemente...|[i, have, impleme...|(24368,[0,1,2,3,4...|Map(serious -> 1....|Map(serious -> 2....|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(demsar -> 1.0...|     Map(demsar -> 1.9...|
+         |three|DataGenCARS is a ...|[datagencars, is,...|(24368,[0,1,2,3,4...|Map(mikhailfranco...|Map(mikhailfranco...|Some of the lates...|[some, of, the, l...|(24368,[0,1,2,3,4...|Map(demsar -> 1.0...|     Map(demsar -> 1.9...|
+         +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+-------------------------+
+
+         flair: two
+         statistical_lm: Map(serious -> 2.5887286753475367E-5, gans -> 1.2943643376737683E-4, k40 -> 2.5887286753475367E-5, subreddit -> 2.5887286753475367E-5, ...
+         background_statistical_lm: Map(demsar -> 1.9185130756258667E-6, dtssh5ftitw -> 1.9185130756258667E-6, mikhailfranco -> 1.9185130756258667E-6, quotient -> 1.9185130756258667E-6, ...
+         */
+
+        Dataset<Row> models = withSLM.select("flair", "statistical_lm", "background_statistical_lm");
+        models.printSchema();
+        models.show();
+
+        spark.conf().set("spark.sql.crossJoin.enabled", true); // naughty ;)
+
+        // cross join every post with all models
+        models.registerTempTable("models");
+        data.registerTempTable("data");
+        final Dataset<Row> crossJoined = spark.sql(
+                "SELECT " +
+                            "data.flair AS label, " +
+                            "data.created, " +
+                            "data.author, " +
+                            "data.text, " +
+                            "data.words, " +
+                            "models.* " +
+                        "FROM data CROSS JOIN models"
+        );
+        crossJoined.printSchema();
+        crossJoined.orderBy("author", "created", "flair").show();
     }
 
 }
