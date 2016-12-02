@@ -3,7 +3,6 @@ package com.cs410dso.postclassifier;
 import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
 import com.cs410dso.postclassifier.model.SubredditFlairModel;
 
-import com.cs410dso.postclassifier.model.TwoString;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.spark.api.java.JavaRDD;
@@ -12,11 +11,13 @@ import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.ml.feature.CountVectorizer;
-import org.apache.spark.ml.feature.CountVectorizerModel;
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
+import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.linalg.SparseVector;
+import org.apache.spark.mllib.evaluation.MulticlassMetrics;
+import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.*;
-import org.apache.spark.ml.feature.RegexTokenizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF1;
@@ -68,13 +69,17 @@ public class App {
 //        SubredditFlairModel subredditFlairModel = new SubredditFlairModel(spark, listOfSubreddits, 1000);
          LocalSubredditFlairModel subredditFlairModel = new LocalSubredditFlairModel(spark); // change to this if behind corporate firewall and you have data.json
         Dataset<Row> dataRawWithNull = subredditFlairModel.getProcessedWords();
-        Dataset<Row> dataRaw = dataRawWithNull.where(dataRawWithNull.col("flair").isNotNull()); // filter out null flairs or flairs that don't have css
-        dataRaw.printSchema();
-        dataRaw.show();
-        System.out.println("number of entries: " + Long.toString(dataRaw.count()));
+        Dataset<Row> dataRawWithoutIndexedFlairs = dataRawWithNull.where(dataRawWithNull.col("flair").isNotNull()); // filter out null flairs or flairs that don't have css
 
-        final CountVectorizerModel dataCVModel = new CountVectorizer().setInputCol("words").setOutputCol("words_features").fit(dataRaw);
-        final Dataset<Row> withWordsFeatures = dataCVModel.transform(dataRaw);
+        StringIndexerModel flairStringIndexerModel = new StringIndexer().setInputCol("flair").setOutputCol("indexed_flair").fit(dataRawWithoutIndexedFlairs);
+        final Dataset<Row> withIndexedFlair = flairStringIndexerModel.transform(dataRawWithoutIndexedFlairs);
+
+        withIndexedFlair.printSchema();
+        withIndexedFlair.show();
+        System.out.println("number of entries: " + Long.toString(withIndexedFlair.count()));
+
+        final CountVectorizerModel dataCVModel = new CountVectorizer().setInputCol("words").setOutputCol("words_features").fit(withIndexedFlair);
+        final Dataset<Row> withWordsFeatures = dataCVModel.transform(withIndexedFlair);
         withWordsFeatures.printSchema();
         withWordsFeatures.show();
 
@@ -100,7 +105,7 @@ public class App {
                 "SELECT " +
                         "author, " +
                         "created, " +
-                        "flair, " +
+                        "indexed_flair, " +
                         "text, " +
                         "words, " +
                         "words_features, " +
@@ -113,7 +118,7 @@ public class App {
         data.show();
 
         // what flairs do we have?
-        Dataset<Row> flairsDS = dataRaw.select("flair").dropDuplicates();
+        Dataset<Row> flairsDS = withIndexedFlair.select("indexed_flair").dropDuplicates();
         List<String> flairs = flairsDS.toJavaRDD().map(new Function<Row, String>() {
             public String call(Row row) {
                 return row.toString();
@@ -124,14 +129,14 @@ public class App {
         // for each flair, get the concatenated text from all posts
         // https://stackoverflow.com/questions/34150547/spark-group-concat-equivalent-in-scala-rdd
         // https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/sql/functions.html#concat_ws(java.lang.String,%20org.apache.spark.sql.Column...)
-        dataRaw.registerTempTable("dataRaw");
+        withIndexedFlair.registerTempTable("dataRawWithoutIndexedFlairs");
         final Dataset<Row> flairAndConcatText = spark.sql(
                 "SELECT " +
-                        "flair, " +
+                        "indexed_flair, " +
                         "concat_ws( ' ', collect_list(text)) AS concat_text " +
-                        "FROM dataRaw " +
-                        "GROUP BY flair");
-        spark.sqlContext().dropTempTable("dataRaw");
+                        "FROM dataRawWithoutIndexedFlairs " +
+                        "GROUP BY indexed_flair");
+        spark.sqlContext().dropTempTable("dataRawWithoutIndexedFlairs");
         flairAndConcatText.show();
 
         // get the combined text of all posts
@@ -214,7 +219,7 @@ public class App {
         counted.registerTempTable("counted");
         final Dataset<Row> withFreq = spark.sql(
                 "SELECT " +
-                        "flair, " +
+                        "indexed_flair, " +
                         "concat_text, " +
                         "words, " +
                         "features, " +
@@ -265,7 +270,7 @@ public class App {
         spark.sqlContext().udf().register("statisicalLMFromWordFreq", statisicalLMFromWordFreq, DataTypes.createMapType(DataTypes.StringType, DataTypes.DoubleType));
         final Dataset<Row> withSLM = spark.sql(
                 "SELECT " +
-                        "flair, " +
+                        "indexed_flair, " +
                         "concat_text, " +
                         "words, " +
                         "features, " +
@@ -286,9 +291,9 @@ public class App {
         // ta-dah!
         Iterator<Row> rowIterator = withSLM.toJavaRDD().toLocalIterator();
         Row row = rowIterator.next();
-        System.out.println("flair: " + row.get(0));
-        System.out.println("statistical_lm: " + row.get(5));
-        System.out.println("background_statistical_lm: " + row.get(10));
+        System.out.println("indexed_flair: " + row.getString(0).substring(0,100));
+        System.out.println("statistical_lm: " + row.getString(5).substring(0,100));
+        System.out.println("background_statistical_lm: " + row.getString(10).substring(0,100));
 
         /**
          * +-----+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+-------------------------+
@@ -306,7 +311,7 @@ public class App {
          background_statistical_lm: Map(demsar -> 1.9185130756258667E-6, dtssh5ftitw -> 1.9185130756258667E-6, mikhailfranco -> 1.9185130756258667E-6, quotient -> 1.9185130756258667E-6, ...
          */
 
-        Dataset<Row> models = withSLM.select("flair", "statistical_lm", "background_statistical_lm");
+        Dataset<Row> models = withSLM.select("indexed_flair", "statistical_lm", "background_statistical_lm");
         models.printSchema();
         models.show();
 
@@ -317,7 +322,7 @@ public class App {
         data.registerTempTable("data");
         final Dataset<Row> crossJoined = spark.sql(
                 "SELECT " +
-                            "data.flair AS label, " +
+                            "data.indexed_flair AS label, " +
                             "data.created, " +
                             "data.author, " +
                             "data.text, " +
@@ -328,7 +333,7 @@ public class App {
         );
         spark.sqlContext().dropTempTable("models");
         crossJoined.printSchema();
-        crossJoined.orderBy("author", "created", "flair").show();
+        crossJoined.orderBy("author", "created", "indexed_flair").show();
 
         // UDF to calculate score according to
         UDF4 calculateScores = new UDF4<scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, scala.collection.immutable.HashMap<String, Double>, BigDecimal, Double> () {
@@ -370,7 +375,7 @@ public class App {
                         "text, " +
                         "words, " +
                         "words_freq, " +
-                        "flair, " +
+                        "indexed_flair, " +
                         "statistical_lm, " +
                         "background_statistical_lm," +
                         "calculateScores(words_freq, statistical_lm, background_statistical_lm, 0.5) AS score " +
@@ -378,7 +383,7 @@ public class App {
         );
         spark.sqlContext().dropTempTable("crossJoined");
         withScores.printSchema();
-        withScores.orderBy("created", "author", "flair").show();
+        withScores.orderBy("created", "author", "indexed_flair").show();
 
         /**
          *
@@ -409,11 +414,95 @@ public class App {
          +-----+--------------------+--------------+--------------------+--------------------+-----+--------------------+-------------------------+------------------+
          */
 
-        final Dataset<Row> toPredict = withScores.select("label", "created", "author", "text", "flair", "score");
+        final Dataset<Row> toPredict = withScores.select("label", "created", "author", "text", "indexed_flair", "score");
         toPredict.printSchema();
-        toPredict.orderBy("created", "author", "text", "flair").show();
+        toPredict.orderBy("created", "author", "text", "indexed_flair").show();
 
+        // get max score
+        final Dataset<Row> withMaxScore = toPredict.withColumn("max_score", functions.max("score").over(Window.partitionBy("created", "author")));
+        withMaxScore.printSchema();
+        withMaxScore.show();
 
+        // get prediction associated with max score
+        final Dataset<Row> withPrediction = withMaxScore.where(withMaxScore.col("max_score").equalTo(withMaxScore.col("score"))).withColumnRenamed("indexed_flair", "prediction");
+        withPrediction.printSchema();
+        withPrediction.show();
+
+        /**
+         *
+         +-----+--------------------+-------------------+--------------------+----------+------------------+------------------+
+         |label|             created|             author|                text|prediction|             score|         max_score|
+         +-----+--------------------+-------------------+--------------------+----------+------------------+------------------+
+         |  one|Mon Nov 14 10:15:...|         Mandrathax|This is a place t...|       one|  87.8360766630904|  87.8360766630904|
+         |three|Tue Oct 11 17:22:...|     rmltestaccount| LI YAO et al.: O...|     three|1155.0839316288157|1155.0839316288157|
+         |  one|Mon Nov 28 00:08:...|darkconfidantislife|Hey there guys,
+
+         ...|       one| 63.26174215614945| 63.26174215614945|
+         | four|Mon Nov 28 10:21:...|             dtraxl|DeepGraph is a sc...|       one|132.32107856319425|132.32107856319425|
+         |three|Mon Nov 28 17:45:...|          omoindrot| Sebastian Ruder ...|       two|1321.8230522733227|1321.8230522733227|
+         |three|Fri Nov 11 12:03:...|       downtownslim| Under review as ...|     three|1155.0839316288157|1155.0839316288157|
+         |  one|Sat Nov 26 08:09:...|              cptai|I am reading the ...|      four|40.095238825671174|40.095238825671174|
+         |  one|Thu Nov 17 14:57:...|        bronzestick|In several applic...|       one|  82.0379393157871|  82.0379393157871|
+         |three|Tue Oct 18 10:21:...|             tuan3w| Cornell Universi...|       one|141.67390310575337|141.67390310575337|
+         |  one|Sat Nov 05 04:15:...|        wjbianjason|To be specific,wh...|       one|26.482771987454917|26.482771987454917|
+         |  one|Thu Oct 13 16:34:...|           Pieranha|The Densely Conne...|       one| 70.91100761313851| 70.91100761313851|
+         |  one|Wed Oct 19 20:12:...| frustrated_lunatic|In Liu CiXin’s no...|       one|  98.7593940942183|  98.7593940942183|
+         | four|Mon Nov 28 19:35:...|           Weihua99| Skip to content ...|       one| 89.12545271201529| 89.12545271201529|
+         |three|Mon Nov 14 13:03:...|          jhartford|For details and a...|      four|15.445879097602354|15.445879097602354|
+         |  one|Tue Nov 08 10:52:...|           huyhcmut|How can I train a...|       one|26.482771987454917|26.482771987454917|
+         | four|Tue Oct 25 14:57:...|      shagunsodhani| Skip to content ...|       one|152.63672751520375|152.63672751520375|
+         |  two|Wed Nov 16 16:30:...|             clbam8|Here at AYLIEN we...|     three|242.64983335099242|242.64983335099242|
+         |  one|Tue Oct 25 20:49:...|           jayjaymz|Hello there. I'm ...|       one| 69.84230631015203| 69.84230631015203|
+         |  one|Tue Nov 29 07:05:...|             Kiuhnm|I'm reading Mansi...|       one| 58.36381995653617| 58.36381995653617|
+         | four|Tue Nov 29 23:33:...|        longinglove|Can we segment un...|       one| 141.1729715740941| 141.1729715740941|
+         +-----+--------------------+-------------------+--------------------+----------+------------------+------------------+
+
+         */
+
+        // index predictions and labels
+        final Dataset<Row> predictionsAndLabels = withPrediction.select("prediction", "label");
+
+        System.out.println("indexed_flair labels: " + Arrays.stream(flairStringIndexerModel.labels()).reduce( (String accum, String elem) -> accum + " " + elem));
+
+        predictionsAndLabels.printSchema();
+        predictionsAndLabels.show();
+
+        JavaRDD<Row> predictionAndLabelRowRDD = predictionsAndLabels.select("prediction", "label").toJavaRDD();
+
+        final JavaRDD<Tuple2<Object, Object>> predictionAndLabelRDD = predictionAndLabelRowRDD.map(new Function<Row, Tuple2<Object, Object>>() {
+            public Tuple2<Object, Object> call(Row row) {
+                Double prediction = row.getDouble(0);
+                Double label = row.getDouble(1);
+                return new Tuple2<Object, Object>(prediction, label);
+            }
+        });
+
+        // https://spark.apache.org/docs/latest/mllib-evaluation-metrics.html
+        // Get evaluation metrics
+        MulticlassMetrics metrics = new MulticlassMetrics(predictionAndLabelRDD.rdd());
+
+        // Confusion matrix
+        Matrix confusion = metrics.confusionMatrix();
+        System.out.println("Confusion matrix: \n" + confusion);
+
+        // Overall statistics
+        System.out.println("Accuracy = " + metrics.accuracy());
+
+        // Stats by labels
+        for (int i = 0; i < metrics.labels().length; i++) {
+            System.out.format("Class %f precision = %f\n", metrics.labels()[i],metrics.precision(
+                    metrics.labels()[i]));
+            System.out.format("Class %f recall = %f\n", metrics.labels()[i], metrics.recall(
+                    metrics.labels()[i]));
+            System.out.format("Class %f F1 score = %f\n", metrics.labels()[i], metrics.fMeasure(
+                    metrics.labels()[i]));
+        }
+
+        //Weighted stats
+        System.out.format("Weighted precision = %f\n", metrics.weightedPrecision());
+        System.out.format("Weighted recall = %f\n", metrics.weightedRecall());
+        System.out.format("Weighted F1 score = %f\n", metrics.weightedFMeasure());
+        System.out.format("Weighted false positive rate = %f\n", metrics.weightedFalsePositiveRate());
     }
 
 }
