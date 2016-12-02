@@ -291,7 +291,7 @@ public class App {
         // ta-dah!
         Iterator<Row> rowIterator = withSLM.toJavaRDD().toLocalIterator();
         Row row = rowIterator.next();
-        System.out.println("indexed_flair: " + row.get(0).toString().substring(0,100));
+        System.out.println("indexed_flair: " + row.get(0).toString());
         System.out.println("statistical_lm: " + row.get(5).toString().substring(0,100));
         System.out.println("background_statistical_lm: " + row.get(10).toString().substring(0,100));
 
