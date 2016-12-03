@@ -310,7 +310,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         .reduce("", (accumulator, e) -> {
             // accumulate them all into a single String
             return accumulator + "\n" + e;
-        });
+        }).substring(1); // case where accumulator is '\n'
         byte data[] = combinedPosts.getBytes();
         try (OutputStream out = new BufferedOutputStream(
                 Files.newOutputStream(p, CREATE, APPEND))) {
