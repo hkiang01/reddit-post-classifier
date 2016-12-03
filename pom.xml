@@ -64,7 +64,7 @@
             <version>2.10.6</version>
         </dependency>
         <dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11 -->
+            <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10 -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${spark.version}</version>
@@ -75,7 +75,12 @@
             <artifactId>spark-sql_2.10</artifactId>
             <version>${spark.version}</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib_2.10 -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_2.10</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
         <dependency>
             <!-- https://bintray.com/thatjavanerd/maven/JRAW -->
             <groupId>net.dean.jraw</groupId>

@@ -285,7 +285,7 @@ public class SubredditIngestion {
     private class ProjectProperties {
 
         /**
-         * The groupId {2link String}
+         * The groupId {@link String}
          */
         private String groupId;
 
