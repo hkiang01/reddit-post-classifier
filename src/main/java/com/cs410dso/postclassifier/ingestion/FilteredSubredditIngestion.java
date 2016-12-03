@@ -1,10 +1,7 @@
 package com.cs410dso.postclassifier.ingestion;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -14,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.dean.jraw.models.Flair;
 import net.dean.jraw.models.Submission;
 
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.AutoDetectParser;
@@ -24,6 +22,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.mortbay.util.ajax.JSON;
+import spire.math.algebraic.Sub;
 
 import java.io.*;
 import java.net.URI;
@@ -33,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -111,10 +109,18 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         // Java stream tutorial examples: http://winterbe.com/posts/2014/07/31/java8-stream-tutorial-examples/
         ImmutableCollection<Submission> submissions = this.getSubmissions();
         System.out.println("retrieved " + submissions.size() + " submissions");
-        Collection<String> selfDomains = this.getSubredditSelfDomains();
-        Collection<String> lowercaseSelfDomains = selfDomains.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toCollection(TreeSet::new));
+
+//        Collection<String> lowercaseSelfDomains = selfDomains.stream()
+//                .map(String::toLowerCase)
+//                .collect(Collectors.toCollection(TreeSet::new));
+        Collection<String> selfDomainsCollection = this.getSubredditSelfDomains();
+        ArrayList<String> selfDomainsList = new ArrayList<>();
+        Iterator<String> it = selfDomainsCollection.iterator();
+        while(it.hasNext()) {
+            selfDomainsList.add(it.next().toLowerCase());
+        }
+        final ArrayList<String> lowercaseSelfDomains = selfDomainsList;
+
         Function<Submission, Boolean> selfFunction = new Function<Submission, Boolean>() {
             public Boolean apply(Submission submission) {
                 String domain = submission.getDomain().toLowerCase();
@@ -132,11 +138,39 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         ImmutableListMultimap<Boolean, Submission> submissions = getSubmissionsBySelf();
         System.out.println("getting submission and metadata for " + submissions.size() + " submissions");
 
-        return submissions.entries().parallelStream().map(e -> { // parallel streams
+//        return submissions.entries().parallelStream().map(e -> { // parallel streams
+//            Submission curSubmission = e.getValue();
+//            if (e.getKey()) { // if the entry's domain is from self.subreddit
+//                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, "JRAW's getSelftext", curSubmission.getSelftext());
+//                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
+//            } else {
+//                String url = curSubmission.getUrl();
+//                String text = getSubmissionArticleTextViajuicer(url);
+//                String method = "juicer";
+//                if(text.length() < TEXT_THRESHOLD) {
+//                    text = getSubmissionArticleViaTikaAutoDetectParser(url);
+//                    method = "Apache Tika Auto-Detect Parser";
+//                }
+//                if(text.length() < TEXT_THRESHOLD && url.contains("pdf")) {
+//                    text = getSubmissionArticleViaTikaPDFParser(url);
+//                    method = "Apache Tika PDF Parser";
+//                }
+//                String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
+//                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, method, textWithoutWhitespace);
+//                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
+//            }
+//        }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
+
+        final ImmutableCollection<Map.Entry<Boolean, Submission>> entries = submissions.entries();
+
+        ArrayList<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> retval = new ArrayList<>();
+
+        for(Iterator<Map.Entry<Boolean, Submission>> it = entries.iterator(); it.hasNext();) {
+            Map.Entry<Boolean, Submission> e = it.next();
             Submission curSubmission = e.getValue();
             if (e.getKey()) { // if the entry's domain is from self.subreddit
                 UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, "JRAW's getSelftext", curSubmission.getSelftext());
-                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
+                retval.add(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair));
             } else {
                 String url = curSubmission.getUrl();
                 String text = getSubmissionArticleTextViajuicer(url);
@@ -151,9 +185,10 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
                 }
                 String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
                 UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, method, textWithoutWhitespace);
-                return new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair);
+                retval.add(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair));
             }
-        }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
+        }
+        return retval;
     }
 
     /**
@@ -255,18 +290,32 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     public Collection<JSONObject> getSubmissionAndMetadataAboveThresholdAsJson() {
         Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> entries = this.getSubmissionsAndMetadata();
         System.out.println("filtering " + entries.size() + " entries");
-        return entries.parallelStream()
-                .filter(e -> e.getValue().text.length() >= TEXT_THRESHOLD)
-                .map(e -> {
-                    Submission submission = e.getKey();
-                    ObjectMapper mapper = new ObjectMapper();
-                    Map<String, Object> result = mapper.convertValue(submission.getDataNode(), Map.class);
-                    JSONObject submissionJsonObject = new JSONObject(result);
-                    JSONObject jsonObject = e.getValue().toJSONObject();
-                    jsonObject.put("submission", submissionJsonObject);
-                    return jsonObject;
-                })
-                .collect(Collectors.toCollection(HashSet::new));
+//        return entries.parallelStream()
+//                .filter(e -> e.getValue().text.length() >= TEXT_THRESHOLD)
+//                .map(e -> {
+//                    Submission submission = e.getKey();
+//                    ObjectMapper mapper = new ObjectMapper();
+//                    Map<String, Object> result = mapper.convertValue(submission.getDataNode(), Map.class);
+//                    JSONObject submissionJsonObject = new JSONObject(result);
+//                    JSONObject jsonObject = e.getValue().toJSONObject();
+//                    jsonObject.put("submission", submissionJsonObject);
+//                    return jsonObject;
+//                })
+//                .collect(Collectors.toCollection(HashSet::new));
+        ArrayList<JSONObject> filteredEntries = new ArrayList<JSONObject>();
+        for (Iterator<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> it = entries.iterator(); it.hasNext(); ) {
+            AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText> e = it.next();
+            if (e.getValue().text.length() >= TEXT_THRESHOLD) {
+                Submission submission = e.getKey();
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> result = mapper.convertValue(submission.getDataNode(), Map.class);
+                JSONObject submissionJsonObject = new JSONObject(result);
+                JSONObject jsonObject = e.getValue().toJSONObject();
+                jsonObject.put("submission", submissionJsonObject);
+                filteredEntries.add(jsonObject);
+            }
+        }
+        return filteredEntries;
     }
 
     /**
@@ -275,8 +324,23 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * @return a {@link String} with the format [author]_[created]
      */
     private String getAuthorUnderscoreCreatedUniqueKey(JSONObject jsonObject) {
-        String author = jsonObject.getOrDefault("author", "").toString();
-        String created = jsonObject.getOrDefault("created", "").toString();
+//        String author = jsonObject.getOrDefault("author", "").toString();
+//        String created = jsonObject.getOrDefault("created", "").toString();
+
+        String author;
+        try {
+            author = jsonObject.get("author").toString();
+        } catch (Exception e) {
+            author = "";
+        }
+
+        String created;
+        try {
+            created = jsonObject.get("created").toString();
+        } catch (Exception e) {
+            created = "";
+        }
+
         return author.concat("_").concat(created);
     }
 
@@ -286,15 +350,30 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      */
     public Collection<JSONObject> getSubmissionAndMetadataAboveThresholdWithFilteredFields() {
         Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThresholdAsJson();
-        return posts.parallelStream().map(e -> {
+
+        //        return posts.parallelStream().map(e -> {
+//            JSONObject jsonObject = new JSONObject();
+//            String key = getAuthorUnderscoreCreatedUniqueKey(e);
+//            jsonObject.put("author", e.get("author"));
+//            jsonObject.put("created", e.get("created"));
+//            jsonObject.put("text", e.get("text"));
+//            jsonObject.put("flair", e.get("flair"));
+//            return jsonObject;
+//        }).collect(Collectors.toCollection(HashSet::new));
+
+        ArrayList<JSONObject> retval = new ArrayList<>();
+        for (Iterator<JSONObject> it = posts.iterator(); it.hasNext(); ) {
+          JSONObject e = it.next();
             JSONObject jsonObject = new JSONObject();
             String key = getAuthorUnderscoreCreatedUniqueKey(e);
             jsonObject.put("author", e.get("author"));
             jsonObject.put("created", e.get("created"));
             jsonObject.put("text", e.get("text"));
             jsonObject.put("flair", e.get("flair"));
-            return jsonObject;
-        }).collect(Collectors.toCollection(HashSet::new));
+            retval.add(jsonObject);
+        }
+        return retval;
+
     }
 
     /**
@@ -306,11 +385,17 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         System.out.println("Saving " + posts.size() + " posts");
 
         Path p = Paths.get(JSON_PATH);
-        String combinedPosts = posts.stream().map(e -> e.toString())
-        .reduce("", (accumulator, e) -> {
-            // accumulate them all into a single String
-            return accumulator + "\n" + e;
-        }).substring(1); // case where accumulator is '\n'
+//        String combinedPosts = posts.stream().map(e -> e.toString())
+//        .reduce("", (accumulator, e) -> {
+//            // accumulate them all into a single String
+//            return accumulator + "\n" + e;
+//        }).substring(1); // case where accumulator is '\n'
+        String combinedPosts = "";
+        for(Iterator<JSONObject> it = posts.iterator(); it.hasNext();) {
+            String e = it.next().toString();
+            combinedPosts = combinedPosts + e;
+        }
+
         byte data[] = combinedPosts.getBytes();
         try (OutputStream out = new BufferedOutputStream(
                 Files.newOutputStream(p, CREATE, APPEND))) {

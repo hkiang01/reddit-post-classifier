@@ -18,7 +18,6 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.spark_project.guava.collect.ImmutableList.of;
 
@@ -129,11 +128,18 @@ public class SubredditIngestion {
      * @return a {@link Collection} of {@link String}s of self domains per subreddit
      */
     public Collection<String> getSubredditSelfDomains() {
-        Collection<String> selfSubreddits = this.getSubreddits().stream()
-                //.map(String::toLowerCase)
-                .map(e -> "self." + e)
-                .collect(Collectors.toCollection(TreeSet::new));
-        return selfSubreddits;
+//        Collection<String> selfSubreddits = this.getSubreddits().stream()
+//                //.map(String::toLowerCase)
+//                .map(e -> "self." + e)
+//                .collect(Collectors.toCollection(TreeSet::new));
+//        return selfSubreddits;
+        Collection<String> selfSubredditsCollection = this.getSubreddits();
+        ArrayList<String> selfSubredditsList = new ArrayList<>();
+        Iterator<String> it = selfSubredditsCollection.iterator();
+        while(it.hasNext()) {
+            selfSubredditsList.add(it.next().toLowerCase());
+        }
+        return selfSubredditsList;
     }
 
     /** Adds to subreddits */
@@ -247,7 +253,13 @@ public class SubredditIngestion {
             return "";
         }
         else {
-            return this.subreddits.stream().reduce("", (a,b) -> a + "+" + b).substring(1);
+            Iterator<String> it = this.subreddits.iterator();
+            String retval = it.next();
+            while(it.hasNext()) {
+                retval = retval +  "+" + it.next();
+            }
+            return retval;
+//            return this.subreddits.stream().reduce("", (a,b) -> a + "+" + b).substring(1);
         }
     }
 
