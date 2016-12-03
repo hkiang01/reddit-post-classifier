@@ -14,4 +14,5 @@ target/
 src/main/resources/credentials.json
 
 # data
+weka/
 *.json

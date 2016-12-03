@@ -22,27 +22,17 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.mortbay.util.ajax.JSON;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -59,6 +49,8 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     private static final String JUICER_PREPEND_URL = "https://juicer.herokuapp.com/api/article?url=";
 
     public static final String JSON_PATH = "./data.json";
+
+    public static final String WEKA_DIR_NAME = "weka";
 
     /**
      * The minimum length of a "valid" text file
@@ -260,7 +252,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * Get a collection of text and flair whose text entries are above TEXT_THRESHOLD
      * @return a {@link Collection} containing {@link JSONObject} containing both the {@link Submission} and its associated metadata (url, author, flair, method, text)
      */
-    public Collection<JSONObject> getSubmissionAndMetadataAboveThreshold() {
+    public Collection<JSONObject> getSubmissionAndMetadataAboveThresholdAsJson() {
         Collection<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> entries = this.getSubmissionsAndMetadata();
         System.out.println("filtering " + entries.size() + " entries");
         return entries.parallelStream()
@@ -293,7 +285,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
      * @return the collection of {@link JSONObject} elements containing a key, some text, and flair
      */
     public Collection<JSONObject> getSubmissionAndMetadataAboveThresholdWithFilteredFields() {
-        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThreshold();
+        Collection<JSONObject> posts = this.getSubmissionAndMetadataAboveThresholdAsJson();
         return posts.parallelStream().map(e -> {
             JSONObject jsonObject = new JSONObject();
             String key = getAuthorUnderscoreCreatedUniqueKey(e);
@@ -325,6 +317,74 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
             out.write(data, 0, data.length);
         } catch (IOException x) {
             x.printStackTrace();
+        }
+    }
+
+    /**
+     * Saves posts as txt files in respective folders for each class to be converted to a ARFF file to be processed by weka
+     * See <a href="https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories">https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories</a>
+     */
+    public void saveSubmissionsAsTxtUnderClassDirectories() {
+
+        // check if file exists
+        try {
+            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
+            System.out.println("Reading from: " + fileName);
+
+        } catch (IOException e) {
+            saveSubmissionAndMetadataAboveThresholdAsJson();
+        }
+
+        try {
+            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
+            System.out.println("Reading from: " + fileName);
+
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            int numJsonObjectLines = 0;
+            while (reader.readLine() != null) numJsonObjectLines++;
+            reader.close();
+            System.out.println("Reading " + numJsonObjectLines + " json objects");
+
+            BufferedReader br = null;
+            JSONParser parser = new JSONParser();
+            String sCurrentLine;
+            br = new BufferedReader(new FileReader(fileName));
+
+            for(int i = 0; i < numJsonObjectLines; i++) {
+                sCurrentLine = br.readLine();
+                Object obj = parser.parse(sCurrentLine);
+                JSONObject jsonObject = (JSONObject) obj;
+
+                String author = jsonObject.get("author").toString();
+                String created = jsonObject.get("created").toString();
+                String text = jsonObject.get("text").toString();
+                String flair;
+                if (jsonObject.get("flair") == null) {
+                    flair = "null";
+                } else {
+                    flair = jsonObject.get("flair").toString();
+                }
+
+                Path wekaBaseRealPath = Paths.get(".").toRealPath();
+                String newRelativePathDirs = wekaBaseRealPath.toString() + "/" + WEKA_DIR_NAME + "/" + flair;
+//                System.out.println("newRelativePathDirs: " + newRelativePathDirs);
+
+                File file = new File(newRelativePathDirs);
+                file.mkdirs();
+
+                String newRealPathString = newRelativePathDirs + "/" + author + "_" + created + ".txt";
+                File newFile = new File(newRealPathString);
+                file.createNewFile();
+
+                PrintWriter writer = new PrintWriter(newRealPathString);
+                writer.print(text);
+                writer.close();
+
+                System.out.println("written: " + newRealPathString);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
