@@ -1,5 +1,5 @@
 # reddit-post-classifier
-
+Uses JRAW, juicer, Apache Tika, and Spark to classify Reddit posts by flair with a Unigram Language Model
 ## Getting started
 
 ### Import the project
