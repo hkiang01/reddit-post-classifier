@@ -25,7 +25,7 @@ Uses JRAW, juicer, Apache Tika, and Spark to classify Reddit posts by flair with
 - Obtain the above from Reddit's [OAuth2 page](https://github.com/reddit/reddit/wiki/OAuth2)
 
 ### Sample Results
-- See [src/app/App.java](https://github.com/hkiang01/reddit-post-classifier/blob/master/src/main/java/com/cs410dso/postclassifier/App.java)
+- See [src/main/java/com/cs410dso/postclassifier/App.java](https://github.com/hkiang01/reddit-post-classifier/blob/master/src/main/java/com/cs410dso/postclassifier/App.java)
 ```
         /*
         root
