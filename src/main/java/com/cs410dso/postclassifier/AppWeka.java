@@ -68,10 +68,10 @@ public class AppWeka {
     // http://weka.wikispaces.com/file/view/TextCategorizationTest.java/82917279/TextCategorizationTest.java
     public static void main(String[] args) throws Exception {
 
-//        ArrayList<String> subreddits = new ArrayList<String>();
-//        subreddits.add("machinelearning");
-//        FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(subreddits, 1000);
-//        ingestion.saveSubmissionAndMetadataAboveThresholdAsJson();
+        ArrayList<String> subreddits = new ArrayList<String>();
+        subreddits.add("machinelearning");
+        FilteredSubredditIngestion ingestion = new FilteredSubredditIngestion(subreddits, 1000);
+        ingestion.saveSubmissionAndMetadataAboveThresholdAsJson();
 
         // scrape and in¡gest
         LocalSubredditFlairModel localSubredditFlairModel = new LocalSubredditFlairModel();
