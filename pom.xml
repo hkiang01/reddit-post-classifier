@@ -9,8 +9,14 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+        <scala.version>2.10.6</scala.version>
         <spark.version>2.0.2</spark.version>
         <jraw.version>0.9.0</jraw.version>
+        <json-simple.version>1.1.1</json-simple.version>
+        <guava.version>20.0</guava.version>
+        <gson.version>2.8.0</gson.version>
+        <tika.version>1.14</tika.version>
+        <weka.version>3.9.0</weka.version>
     </properties>
 
     <repositories>
@@ -61,7 +67,7 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.10.6</version>
+            <version>${scala.version}</version>
         </dependency>
         <dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10 -->
@@ -93,31 +99,31 @@
             <!-- http://search.maven.org/#artifactdetails%7Ccom.googlecode.json-simple%7Cjson-simple%7C1.1.1%7Cbundle -->
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
+            <version>${json-simple.version}</version>
         </dependency>
         <dependency>
             <!-- https://github.com/google/guava -->
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>20.0</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <!-- https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.google.code.gson%22%20AND%20a%3A%22gson%22 -->
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.0</version>
+            <version>${gson.version}</version>
         </dependency>
         <dependency>
             <!-- https://tika.apache.org/1.14/gettingstarted.html -->
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.14</version>
+            <version>${tika.version}</version>
         </dependency>
         <dependency>
             <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable -->
             <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>weka-stable</artifactId>
-            <version>3.8.0</version>
+            <artifactId>weka-dev</artifactId>
+            <version>${weka.version}</version>
         </dependency>
     </dependencies>
 

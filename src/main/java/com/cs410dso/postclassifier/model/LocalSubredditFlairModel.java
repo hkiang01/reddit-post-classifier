@@ -126,10 +126,12 @@ public class LocalSubredditFlairModel {
                 String text = jsonObject.get("text").toString();
                 String flair;
                 if (jsonObject.get("flair") == null) {
-                    flair = "null";
+                    // flair = "null";
+                    continue; // not interseted in null
                 } else {
                     flair = jsonObject.get("flair").toString();
                 }
+
 
                 Path wekaBaseRealPath = Paths.get(".").toRealPath();
                 String newRelativePathDirs = wekaBaseRealPath.toString() + "/" + WEKA_DIR_NAME + "/" + flair;
