@@ -5,8 +5,12 @@ import org.apache.spark.ml.feature.Tokenizer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import scala.tools.nsc.backend.icode.Members;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 
@@ -21,6 +25,14 @@ public class LocalSubredditFlairModel {
     private SparkSession spark;
 
     private static final String JSON_PATH = "./data.json";
+
+
+    public static final String WEKA_DIR_NAME = "weka";
+
+
+    public LocalSubredditFlairModel() {
+
+    }
 
     /**
      * Instantiates a new SubredditFlairModel using 25 ingestion attempts from the front page
@@ -71,6 +83,75 @@ public class LocalSubredditFlairModel {
         Dataset<Row> raw = this.getRawDataset();
         Tokenizer tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words");
         return tokenizer.transform(raw);
+    }
+
+    /**
+     * Saves posts as txt files in respective folders for each class to be converted to a ARFF file to be processed by weka
+     * See <a href="https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories">https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories</a>
+     */
+    public void saveSubmissionsAsTxtUnderClassDirectories() {
+
+        // check if file exists
+        try {
+            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
+            System.out.println("Reading from: " + fileName);
+
+        } catch (IOException e) {
+            // saveSubmissionAndMetadataAboveThresholdAsJson();
+            e.printStackTrace();
+        }
+
+        try {
+            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
+            System.out.println("Reading from: " + fileName);
+
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            int numJsonObjectLines = 0;
+            while (reader.readLine() != null) numJsonObjectLines++;
+            reader.close();
+            System.out.println("Reading " + numJsonObjectLines + " json objects");
+
+            BufferedReader br = null;
+            JSONParser parser = new JSONParser();
+            String sCurrentLine;
+            br = new BufferedReader(new FileReader(fileName));
+
+            for(int i = 0; i < numJsonObjectLines; i++) {
+                sCurrentLine = br.readLine();
+                Object obj = parser.parse(sCurrentLine);
+                JSONObject jsonObject = (JSONObject) obj;
+
+                String author = jsonObject.get("author").toString();
+                String created = jsonObject.get("created").toString();
+                String text = jsonObject.get("text").toString();
+                String flair;
+                if (jsonObject.get("flair") == null) {
+                    flair = "null";
+                } else {
+                    flair = jsonObject.get("flair").toString();
+                }
+
+                Path wekaBaseRealPath = Paths.get(".").toRealPath();
+                String newRelativePathDirs = wekaBaseRealPath.toString() + "/" + WEKA_DIR_NAME + "/" + flair;
+//                System.out.println("newRelativePathDirs: " + newRelativePathDirs);
+
+                File file = new File(newRelativePathDirs);
+                file.mkdirs();
+
+                String newRealPathString = newRelativePathDirs + "/" + author + "_" + created + ".txt";
+                File newFile = new File(newRealPathString);
+                file.createNewFile();
+
+                PrintWriter writer = new PrintWriter(newRealPathString);
+                writer.print(text);
+                writer.close();
+
+                System.out.println("written: " + newRealPathString);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package com.cs410dso.postclassifier;
 
 import com.cs410dso.postclassifier.ingestion.FilteredSubredditIngestion;
+import com.cs410dso.postclassifier.model.LocalSubredditFlairModel;
+
 import java.util.*;
 
     /**
@@ -13,8 +15,8 @@ public class AppWeka {
         // scrape and in¡gest
         ArrayList<String> listOfSubreddits = new ArrayList();
         listOfSubreddits.add("machinelearning");
-        FilteredSubredditIngestion filteredSubredditIngestion = new FilteredSubredditIngestion(listOfSubreddits, 1000);
-        filteredSubredditIngestion.saveSubmissionsAsTxtUnderClassDirectories(); // save in
+        LocalSubredditFlairModel localSubredditFlairModel = new LocalSubredditFlairModel();
+        localSubredditFlairModel.saveSubmissionsAsTxtUnderClassDirectories(); // save in
 
     }
 

@@ -1,5 +1,6 @@
 package com.cs410dso.postclassifier.ingestion;
 
+import com.cs410dso.postclassifier.util.SubmissionAndTextWrapper;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
 import com.google.gson.JsonElement;
@@ -32,6 +33,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import static java.util.Arrays.asList;
+
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -49,6 +56,8 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
     public static final String JSON_PATH = "./data.json";
 
     public static final String WEKA_DIR_NAME = "weka";
+
+    private static final int NUM_CPU_CORES = 4;
 
     /**
      * The minimum length of a "valid" text file
@@ -161,34 +170,68 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
 //            }
 //        }).collect(Collectors.toCollection(HashSet::new)); // hashset for constant time
 
+        // the submissions to processs
         final ImmutableCollection<Map.Entry<Boolean, Submission>> entries = submissions.entries();
 
-        ArrayList<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> retval = new ArrayList<>();
+        // https://stackoverflow.com/questions/2016083/what-is-the-easiest-way-to-parallelize-a-task-in-java
+        ExecutorService executorService = Executors.newFixedThreadPool(NUM_CPU_CORES);
+        List<Callable<SubmissionAndTextWrapper>> tasks = new ArrayList<Callable<SubmissionAndTextWrapper>>();
 
-        for(Iterator<Map.Entry<Boolean, Submission>> it = entries.iterator(); it.hasNext();) {
-            Map.Entry<Boolean, Submission> e = it.next();
-            Submission curSubmission = e.getValue();
-            if (e.getKey()) { // if the entry's domain is from self.subreddit
-                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, "JRAW's getSelftext", curSubmission.getSelftext());
-                retval.add(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair));
-            } else {
-                String url = curSubmission.getUrl();
-                String text = getSubmissionArticleTextViajuicer(url);
-                String method = "juicer";
-                if(text.length() < TEXT_THRESHOLD) {
-                    text = getSubmissionArticleViaTikaAutoDetectParser(url);
-                    method = "Apache Tika Auto-Detect Parser";
+        // the parallel call
+        for(final Map.Entry<Boolean, Submission> curr : entries) {
+            Callable<SubmissionAndTextWrapper> c = new Callable<SubmissionAndTextWrapper>() {
+                @Override
+                public SubmissionAndTextWrapper call() throws Exception {
+                    Submission submission = curr.getValue();
+                    boolean isSelf = curr.getKey();
+                    return extractTextFromSubmission(submission, isSelf);
                 }
-                if(text.length() < TEXT_THRESHOLD && url.contains("pdf")) {
-                    text = getSubmissionArticleViaTikaPDFParser(url);
-                    method = "Apache Tika PDF Parser";
-                }
-                String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
-                UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(curSubmission, method, textWithoutWhitespace);
-                retval.add(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(curSubmission, submissionTextFlair));
-            }
+            };
+            tasks.add(c);
         }
+
+        // the parallel collection (extract the result from the wrapper class)
+        ArrayList<AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>> retval = new ArrayList<>();
+        try {
+            List<Future<SubmissionAndTextWrapper>> results = executorService.invokeAll(tasks);
+            for(Future<SubmissionAndTextWrapper> future : results) {
+                SubmissionAndTextWrapper res = future.get();
+                final AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText> item = res.item;
+                retval.add(item);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return retval;
+    }
+
+    /**
+     * Calls extractos to extract text of submission
+     * @param submission The submission to extract text from
+     * @param isSelf Whether or not the submission was a post to a self domain
+     * @return The Submission and its associated url, author, flair, method of extraction, and text
+     */
+    private SubmissionAndTextWrapper extractTextFromSubmission(Submission submission, boolean isSelf) {
+        if (isSelf) { // if the entry's domain is from self.subreddit
+            UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(submission, "JRAW's getSelftext", submission.getSelftext());
+            return new SubmissionAndTextWrapper(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(submission, submissionTextFlair));
+        } else {
+            String url = submission.getUrl();
+            String text = getSubmissionArticleTextViajuicer(url);
+            String method = "juicer";
+            if(text.length() < TEXT_THRESHOLD) {
+                text = getSubmissionArticleViaTikaAutoDetectParser(url);
+                method = "Apache Tika Auto-Detect Parser";
+            }
+            if(text.length() < TEXT_THRESHOLD && url.contains("pdf")) {
+                text = getSubmissionArticleViaTikaPDFParser(url);
+                method = "Apache Tika PDF Parser";
+            }
+            String textWithoutWhitespace = text.replaceAll("\\s+", " "); // https://stackoverflow.com/questions/18870395/how-to-remove-spaces-in-between-the-string
+            UrlAuthorFlairMethodText submissionTextFlair = new UrlAuthorFlairMethodText(submission, method, textWithoutWhitespace);
+            return new SubmissionAndTextWrapper(new AbstractMap.SimpleEntry<Submission, UrlAuthorFlairMethodText>(submission, submissionTextFlair));
+        }
     }
 
     /**
@@ -405,73 +448,6 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         }
     }
 
-    /**
-     * Saves posts as txt files in respective folders for each class to be converted to a ARFF file to be processed by weka
-     * See <a href="https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories">https://weka.wikispaces.com/Text+categorization+with+WEKA#Import-Directories</a>
-     */
-    public void saveSubmissionsAsTxtUnderClassDirectories() {
-
-        // check if file exists
-        try {
-            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
-            System.out.println("Reading from: " + fileName);
-
-        } catch (IOException e) {
-            saveSubmissionAndMetadataAboveThresholdAsJson();
-        }
-
-        try {
-            String fileName = Paths.get(JSON_PATH).toRealPath().toString();
-            System.out.println("Reading from: " + fileName);
-
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            int numJsonObjectLines = 0;
-            while (reader.readLine() != null) numJsonObjectLines++;
-            reader.close();
-            System.out.println("Reading " + numJsonObjectLines + " json objects");
-
-            BufferedReader br = null;
-            JSONParser parser = new JSONParser();
-            String sCurrentLine;
-            br = new BufferedReader(new FileReader(fileName));
-
-            for(int i = 0; i < numJsonObjectLines; i++) {
-                sCurrentLine = br.readLine();
-                Object obj = parser.parse(sCurrentLine);
-                JSONObject jsonObject = (JSONObject) obj;
-
-                String author = jsonObject.get("author").toString();
-                String created = jsonObject.get("created").toString();
-                String text = jsonObject.get("text").toString();
-                String flair;
-                if (jsonObject.get("flair") == null) {
-                    flair = "null";
-                } else {
-                    flair = jsonObject.get("flair").toString();
-                }
-
-                Path wekaBaseRealPath = Paths.get(".").toRealPath();
-                String newRelativePathDirs = wekaBaseRealPath.toString() + "/" + WEKA_DIR_NAME + "/" + flair;
-//                System.out.println("newRelativePathDirs: " + newRelativePathDirs);
-
-                File file = new File(newRelativePathDirs);
-                file.mkdirs();
-
-                String newRealPathString = newRelativePathDirs + "/" + author + "_" + created + ".txt";
-                File newFile = new File(newRealPathString);
-                file.createNewFile();
-
-                PrintWriter writer = new PrintWriter(newRealPathString);
-                writer.print(text);
-                writer.close();
-
-                System.out.println("written: " + newRealPathString);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Gets the path to JSON_PATH readable by Spark using Spark 2.0.2's spark.read.json([the path])
