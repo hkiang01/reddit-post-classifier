@@ -1,5 +1,0 @@
-I've been working on creating a binary text classifier for diagnosing language impaired children using the CHILDES corpus. I've been using the package polyssifier (https://github.com/alvarouc/polyssifier) to create and test the data and recently after adding a few extra features most of my classifiers have been predicting the correct result 100% of the time.
-
-Surely this can't be right? What can I do to check the validity of this result?
-
-http://imgur.com/a/reagU

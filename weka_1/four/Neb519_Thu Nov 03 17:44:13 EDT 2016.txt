@@ -1,3 +1,0 @@
-Hey everyone,
-
-I recently published [this write-up](https://www.kaggle.com/forums/f/15/kaggle-forum/t/25058/mltools-my-r-package-for-machine-learning-tools) on Kaggle describing my (non CRAN'ed) R package, [mltools](https://github.com/ben519/mltools), with various functions and techniques I use for machine learning.  I think it's a good read for anyone interested in machine learning and competing on Kaggle - not just R users.

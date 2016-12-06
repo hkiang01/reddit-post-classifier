@@ -1,1 +1,0 @@
-I was wondering that if there is any (real-world) application where LDA may still prove to be useful compared to other deep learning approaches for natural language?

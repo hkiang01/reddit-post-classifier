@@ -1,4 +1,0 @@
-I need help finding a dataset with handwritten unicode characters. Some exist covering latin numerals and the English alphabet but none include characters for punctuation and mathematical operators. 
-
-ImageNet and VOC doesn't cover these. The MNIST covers digits 0-9, likewise Char74K has numeral and lower/upper case letters for the Latin and Hindu-Arabic systems. 
-More suited datasets like HWRT and Detexify are private. I've also considered curating a dataset with Flickr but could not scrape enough images per category. Does anyone have any advice/know a public dataset that meet my criteria? Thanks in advance!

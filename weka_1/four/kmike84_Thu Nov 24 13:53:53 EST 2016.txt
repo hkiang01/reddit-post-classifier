@@ -1,5 +1,0 @@
-https://github.com/TeamHG-Memex/eli5
-
-Currently it supports scikit-learn, lightning and sklearn-crfsuite; it also contains an alternative implementation of LIME algorithm, so it can be used to explain predictions of black-box algorithms as well (the feature is experimental though). Focus is on text data, but other data is also supported; there are plans to add support for more ML frameworks and expand it to images. The best place to get started is the [overview](http://eli5.readthedocs.io/en/latest/overview.html) and a [tutorial](http://eli5.readthedocs.io/en/latest/tutorials/sklearn-text.html).
-
-Feedback is welcome!

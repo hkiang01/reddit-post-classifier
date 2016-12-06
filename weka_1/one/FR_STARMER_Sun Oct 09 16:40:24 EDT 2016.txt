@@ -1,5 +1,0 @@
-So I've found that mean-squared error really halts learning after a certain amount of time because it's slope decreases exponentially towards zero. So it's really good for tuning in to about where it needs to be, but not good at really tweaking itself to 0.
-
-So I added MSE to MAE in this function: x^2 + abs(x), so when the parabola starts to bottom out, it switched to the abs function. Neat! But the problem is that MAE has a super slow learning rate, and if your using data that produces all sorts of different losses, it's not really good. So I developed a new function: (x^2 + abs(x))^0.8, so it's a parabolic slope at large values, linear slope at smaller values, and an exponentially increasing slope for very small values. Does this type of function aid in gradient decent?
-
-What should one be aiming for when choosing a loss function or writing their own? Other thoughts on loss functions in general?

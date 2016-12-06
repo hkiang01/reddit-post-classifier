@@ -1,7 +1,0 @@
-It used to be that ConvNets would use 2x2 pooling every few layers: the number of channels would grow, while the dimensions of the image would decrease all the way to 4x4 or less.
-
-However, now, with the [Xception](https://arxiv.org/abs/1610.02357) architecture, I'm seeing lots of pooling in the beginning (299x299 -&gt; 18x18), no pooling in most of the network, and lots of pooling at the end (18x18 -&gt; 1x1).
-
-Is there a justification for this? Pinging my reddit friend, /u/fchollet.
-
-**Edit** post not showing up; mods notified

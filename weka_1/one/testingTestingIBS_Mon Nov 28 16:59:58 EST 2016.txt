@@ -1,3 +1,0 @@
-I am getting to the point where I can no longer use keras for my research -- too many bugs.  Looking at the pull request queue, there are over 70 fixes in there right now, some are many months old.  When I look at the commit log, its a lot of new features and the old features are still broken.  Also, we could go through the documentation and make sure all the examples work with both tf and theano.  
-
-I really like using Keras and want to see this project continue to succeed! 

@@ -1,9 +1,0 @@
-I'm trying to read [Understanding Deep Convolutional Networks](https://arxiv.org/abs/1601.04920), but I'm struggling because I'm completely new to concepts such as lie groups, diffeomorphisms, wavelets and scattering transforms.
-
-I don't have the time to study all that math properly and I don't think it'd be worth it. I have no problems with delta-epsilon definitions and abstractions like groups, rings, etc..., but I don't want to learn theorems and concepts which aren't strictly relevant.
-
-Is there something like an *extended* version of that paper or a book which gives you just enough to understand all those concepts?
-
----
-
-edit: The book [Functions, Spaces, and Expansions](https://www.amazon.com/Functions-Spaces-Expansions-Mathematical-Engineering-ebook/dp/B00FBG7A8I/keywords=wavelets+linear) seems like a good choice since the prerequisites are modest enough.

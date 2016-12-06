@@ -1,9 +1,0 @@
-Hello,
-
-I'm interested in knowing how stochastic calculus could be used in machine learning. I have no idea where to start looking. It would seem to me that exploiting time continuity in some problems could bring a lot of very very powerful tools.
-
-If anybody has pointers to the right direction.
-
-Thanks
-
-( i have tried to googling my question, only find unrelated articles about quants. Some links on variational inference too, would that be a direction ?)

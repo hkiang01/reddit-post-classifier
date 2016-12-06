@@ -1,5 +1,0 @@
-In several applications using LSTMs/RNNs (such as char-rnn or Alex Graves handwriting generation), given the input at current time-step we output (or predict) the parameters governing the distribution of the output. At training time, at each time-step, we train the model to maximize the likelihood of the true output w.r.t the predicted distribution. 
-
-But at prediction time, at the last observed time-step we predict the output distribution and sample from it to get the input at next time-step. Given this predicted input, we again obtain an output distribution from the LSTM. But this output distribution is not truly indicative of the variability in the prediction because the uncertainty from previous time-step is not propagated correctly (only a single sample is taken). This discrepancy keeps increasing as we do multi-step prediction. 
-
-Is there any work in the past that dealt with this problem? This problem is not just restricted to LSTMs (or RNNs) but any predictive model which doesn't propagate uncertainty through non-linear functions. 

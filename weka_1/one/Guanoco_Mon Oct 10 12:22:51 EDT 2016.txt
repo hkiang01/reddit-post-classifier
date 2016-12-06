@@ -1,8 +1,0 @@
-Hello all,
-
-It seems like there isn't a week in which deep learning doesn't come up as achieving some kind of remarkable task.
-I understand that one of the powers of deep learning is that it is capable of learning the features. 
-This capacity seems totally decoupled from the underlaying problem. So basically I read this as "no matter what problem you have... You can use deep learning". 
-
-Now.. I know there must be a caveat. I just don't know which.
-What kind of problems are not applicable for deep learning?

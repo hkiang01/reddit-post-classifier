@@ -1,5 +1,0 @@
-Sorry for another meta-thread, but after the ["who are you" thread](https://www.reddit.com/r/MachineLearning/comments/5dek9l/d_who_are_you/?sort=new), I was wondering why are users not allowed to set flairs on this subreddit? Flairs such as "MSc Computer Vision" / "Industry researcher" / "PhD Optimization" / may add useful metadata to comments, give a hint about where a person's view is coming from, and generally help learning something about the person behind the comment.
-
-For some examples: I know that /r/cscareerquestions and /r/gradschool uses them. [Here](https://www.reddit.com/r/GradSchool/comments/2nyuio/grad_school_is_awesome/)'s a thread from /r/gradschool
-
-Obviously, the flairs are optional if enabled.

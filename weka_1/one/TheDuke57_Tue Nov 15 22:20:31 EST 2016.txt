@@ -1,7 +1,0 @@
-I am curious about using CNNs to aid in fluid flow analysis. I looked around on google and arxiv but only found one paper titled "Convolutional Neural Networks for Steady Flow Approximation" which is surprisingly from Autodesk. They seem to have produced some pretty interesting and impressive results, but that is the only reference I have found. Most papers are in reference to mapping CFD to structural models or predicting rates of reactions in fluid flows. 
-
-http://www.kdd.org/kdd2016/papers/files/adp1175-guoA.pdf
-
-Basically, they created input 2D and 3D 'images' as distances from the surface of a submerged object. Then ran a series of convolution, fully connected, and de-convolution layers to predict the 2D and 3D velocity fields. The result was a 2-4 order-of-magnitude speed up on predicting the velocity field compared to the LBM method and sacrificed of 1-3% error. There are some drawbacks with regards to input velocity and control of the boundary conditions, but it is very interesting. 
-
-Does anyone know of similar research or similar papers? What are your thoughts on the idea? 

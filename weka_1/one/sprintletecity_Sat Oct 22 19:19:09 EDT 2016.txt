@@ -1,1 +1,0 @@
-There is a part in the paper (https://arxiv.org/pdf/1511.06391v4.pdf) that discusses the process block - how does it make sense to concatenate the read-out to the query vector q_t? Shouldn't this be an add operation, since concatenation will change the dimension of q_t? I just don't understand how this can be evolved using the lstm.

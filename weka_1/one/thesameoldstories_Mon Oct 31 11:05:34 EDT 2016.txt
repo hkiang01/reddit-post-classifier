@@ -1,7 +1,0 @@
-I was reading [this interview](http://mlconf.com/tryolabs-interview/) where it talks about applying Deep Learning techniques to product categorization in e-commerce.
-
-In there Nick (the interviewer) asks Agustin if he had co-trained RNN &amp; CNN models to improve performance for his project. He answered he didn't due to computational cost / benefit relation.
-
-Question: does any of you have practical experience co-training RNN &amp; CNN and can tell in which context is a good idea to do it?
-
-Thanks!!

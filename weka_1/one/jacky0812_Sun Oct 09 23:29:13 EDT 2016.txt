@@ -1,1 +1,0 @@
-Pretty much most of the RNN related papers that I read are on text, speech or images data, is there any reason that we don't see much research on using RNN on time series data like stock market or IOT, sensor data?

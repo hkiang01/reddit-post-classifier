@@ -1,3 +1,0 @@
-http://style-transfer.kath.io
-
-It's optimizer-based (not feed-forward) and there is a visualization of each iterate allowing one to see the optimizer's progress. The optimizer-based method of stylization renders higher quality images IMHO. There's limited interactivity, in that one can change parameters like the image size or the weights of each layer in the loss function, without restarting. (It will just clear the L-BFGS memory or the Adam moment estimations and continue on using the current image as the initial state.)

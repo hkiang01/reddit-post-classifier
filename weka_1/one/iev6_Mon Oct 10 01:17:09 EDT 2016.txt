@@ -1,1 +1,0 @@
-Hello, Has anyone here tried using convolutional neural nets for speech signals? I need to check if CNNs work well for speaker identification, in comparison to the old fashioned feature extraction techniques. 

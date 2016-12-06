@@ -1,9 +1,0 @@
-I've been working on a project and I'm not sure how to approach using pca on a certain data set. The way I used PCA before was when given say m examples(of faces or something labelled) with n features, the # of features was reduced to a certain # of principle components.
-The current dataset I'm looking to reduce has data on currency markets in the following format:
-http://imgur.com/a/td7CP
-
-So 1st column deals w/ dates, the rest of the columns have the  exchange rate at the date given by the 1st column
-I haven't dealt with time series so I'm not sure how to approach this. Would I be reducing the dimensions of each year? Doesn't feel right to me .
-
-edit: the full dataset has about 3k dates and 18 currencies
-and its the returns on the exchange rate, not the exchange rate

@@ -1,1 +1,0 @@
-Debugging machine learning code can be tough because a lot of times your model may not be deterministic. The obvious step is to make sure your code is correct, but beyond that what are some steps that you take when you train a model and the results you get are not what you expect?

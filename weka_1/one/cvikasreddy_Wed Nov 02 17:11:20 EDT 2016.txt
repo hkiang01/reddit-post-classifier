@@ -1,3 +1,0 @@
-I am training a GAN on mnist dataset and when doing so, just in 5 steps(5 batches, batch_size=128), the discriminator loss go down to 0.0 and there is no further improvement in generator.
-
-How do I solve this problem?

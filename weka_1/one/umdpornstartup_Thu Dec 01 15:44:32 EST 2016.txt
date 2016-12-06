@@ -1,1 +1,0 @@
-How feasible is it to build a Deep Q learner that churns out new math proofs with a secondary reinforcer being verification from an actual theorem proofer. Ideally in the long run this will proof anything mathematical. 

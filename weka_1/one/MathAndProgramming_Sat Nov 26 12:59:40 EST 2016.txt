@@ -1,5 +1,0 @@
-I've been doing some work with some deep conv autoencoders, and, as I imagine is the case with many other deep models, training time is a huge impediment. It's hard to iterate on model architecture when you're getting nearly one result a day.
-
-What sorts of things do you do to accelerate your work in these contexts? Should I be parallelizing my training all over AWS with different architectures and hyperparameters? Do you have any pretraining tricks that you've found to accelerate your work?
-
-I'm playing with some extensions of the "Learning to learn gradient descent by gradient descent" ideas to try to improve on RMSProp, but that's a pretty major undertaking in itself.

@@ -1,5 +1,0 @@
-(If this should go in the simple questions thread let me know, I'll delete it, apologies in advance.) 
-
-I've seen a lot of jobs which require masters degrees. I'm currently at the point that I have about a month to decide if I want to go to grad school in the fall. I've taken 2 graduate level machine learning courses (Introduction to Statistical Learning &amp; Neural and Adaptive Systems) as an undergrad and have done a small independent project, but is that enough? Obviously there are more components to a landing a job than degree/qualifications, but it is a starting point.
-
-(Edit: Title should really read "Masters Degree or Higher")

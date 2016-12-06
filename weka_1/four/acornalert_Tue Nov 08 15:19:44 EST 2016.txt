@@ -1,1 +1,0 @@
-This is a real-time map of tweets, classified with Dracula.js, updated every minute. Dracula.js tries to determine if the addition of a :D or D: emoticon substantially changes the mood of the tweet. Dracula is an LSTM-based sequence tagger which operates on character embeddings. Find out more about how it works » or try a live demo »

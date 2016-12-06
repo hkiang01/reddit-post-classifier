@@ -1,5 +1,0 @@
-Hello there! 
-
-I'm an EE undergrad who really loves to learn more about Machine Learning and has the "Operations Research" course this semester. 
-
-Our course project is to find a real world problem and solve and optimize it using Linear Programming, as Machine Learning is one of my favorite topics I want to choose a Machine Learning Problem, but I have little idea about what I can choose and came here asking for help. Thanks!

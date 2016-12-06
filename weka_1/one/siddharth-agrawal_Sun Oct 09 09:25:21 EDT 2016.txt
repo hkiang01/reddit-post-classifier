@@ -1,1 +1,0 @@
-What is the procedure for converting log-likelihood values to bits/dim? Clarification of just one example will be enough. The log-likelihood value reported in the NICE paper (https://arxiv.org/abs/1410.8516) for CIFAR-10 is 5371.78. The same value is reported as 4.48 in the PixelRNN paper (https://arxiv.org/abs/1601.06759).

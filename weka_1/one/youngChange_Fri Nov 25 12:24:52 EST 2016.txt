@@ -1,7 +1,0 @@
-I am a 3rd year CS student trying to make an application that will auto-group faces of the same person like google photos does.
-I used OpenFace, an open source implementation of Google's FaceNet paper, which uses triplet loss to generate a [1 x 127] representation of an person's face. 
-Now that I have a representation for each photo in my data-set, I would like to cluster photos of the same person together. The tricky part here is that I do not know exactly how many unique people are in the dataset.
-
-Could anyone provide any guidance to cluster photos of the same person without knowing the number of clusters?. 
-
-Thank you for your time.

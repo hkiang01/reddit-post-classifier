@@ -1,1 +1,0 @@
-This is the repository for Fully Convolutional Instance-aware Semantic Segmentation (FCIS), which won COCO segmentation challenge 2016 by a large margin. An arxiv tech report describing FCIS is available here. If you find FCIS useful for your research, please consider citing

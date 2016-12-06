@@ -1,1 +1,0 @@
-Hey guys, so basically I am trying to find pictures which have meteors on them but the size of the pictures is super huge. Since most of the pictures are shot in RAW with a DSLR their size is really big and performance is an issue. What should I use for this?

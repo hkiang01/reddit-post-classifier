@@ -1,7 +1,0 @@
-I understand most ML algos pretty well but I haven't ran them a lot. Till now, my experience with ML has been with small datasets in R on my laptop. Which was just simply loading dataset, data processing and calling the specific function. I'm learning deep nets and I'm reading not to use my own laptop as training would degrade it, apparently.
-
-So what I see from most threads, people use cloud services. I've been reading about using ssh to use AWS/other cloud services for faster computation. I don't understand what ssh is, how to use AWS etc. Can someone provide a detailed explanation/links to tutorials on how to start using ML in the cloud for a complete novice, how to ssh and add datasets and ML algos in the different cloud services, what's the difference between the cloud services (which are better).
-
-And also can someone explain the role of GPU's in ML and what I need to do in order to use them for ML?
-
-Basically an ELI5 start-to-end tutorial on how to use ML in the cloud and what roles GPU's play in ML

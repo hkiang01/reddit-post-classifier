@@ -1,1 +1,0 @@
-I am doing some work in the music information retrieval domain and was wondering if the weights for any of the speech to text networks were available or if any other trained networks for musical feature extraction were open sourced.

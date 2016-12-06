@@ -1,8 +1,0 @@
-Hi all,
-
-Looking to get into tensorflow by porting a [model](https://github.com/harvardnlp/im2markup/). The gist of the model is a CNN followed by a bi-directional RNN which encodes input images with sizes that fall into 9 buckets/bins, and an attention-based decoder which computes a context vector of the same size (regardless of input size) and runs for varying timesteps (one timestep per token in the output). I'm not sure how to go about organizing the data for efficient computation. 
-
-For the encoder, would I create a different model for each input size bucket and share variables? Is it easier to just pad all images to a uniform size? 
-
-For the decoder, padding would seem pretty inefficient as the mean output sequence length seems to be somewhere around 150-200, but a decent number of sequences go from several hundred all the way to ~1050.
-

@@ -1,7 +1,0 @@
-Could someone more experienced in this matter help me out.
-
-I have a problem similar to face recognition but instead of faces I have images of dolphin fins. Turns out dolphins have unique fins. Now I want to build a neural network that will map an image of a dolphin fin to an N-dimensional vector representing that dolphin uniquely. I think this is called an embedding (correct me if I'm wrong). 
-
-Google's FaceNet used a similar approach to map faces to a 128-dimensional vector. I'm wondering how would I go about doing this. Could I use a pretrained network (let's say FaceNet) and use transfer learning to recognize dolphin fins? If not, how big of a dataset would I need to make my own embedding for recognizing dolphins?
-
-Please understand I don't have a lot of experience with neural networks. I just want to learn.

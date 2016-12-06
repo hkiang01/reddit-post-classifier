@@ -1,6 +1,0 @@
-I am currently writing a paper on a regression method in which I am using a standard convolutional neural network (conv-relu-pool, ..., fully connected).
-From what I seeing in most recent papers from the machine learning community, people (righteously, I believe) assume that the reader will know what this is and don't even include a general reference to conv nets. 
-
-In my case though, the target audience is not really machine-learning researchers (but more an application-specific community) so I think it would make sense to include a reference to a generic description of conv nets (especially since no one has applied deep learning to the problem that I am trying to solve yet).
-
-Do you have any thoughts on which paper(s) I should cite when I mention conv nets ? I am a bit overwhelmed by the number of existing papers and the "I was the first !"-fights.

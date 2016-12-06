@@ -1,1 +1,0 @@
-I'm doing a lit review and I'm failing to find any literature describing CNNs with inputs preprocessed so as to reduce the networks' ridiculous memory requirement. Does anyone know of any such methods? Both pre-processing steps and network layers that somehow alter the image before the first CONV layer are what I'm after.

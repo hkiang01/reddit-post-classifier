@@ -1,5 +1,0 @@
-Hello,
-
-This question is with reference to a great paper on Bayesian Changepoint detection by Adams and McKay http://hips.seas.harvard.edu/files/adams-changepoint-tr-2007.pdf and its associated implementation http://www.inference.phy.cam.ac.uk/rpa23/cp/gaussdemo.m.
-
-The question is with regard to the predictive probability that appears in Step 3 of Algorithm 1 of the paper. If I am working with a scalar datum x_t, the predictive probability should be a scalar quantity with univariate distribution parameters right? Why is predprobs in gaussdemo.m a t x 1 vector with the studentpdf being evaluated with distribution parameters being estimated at everytime step. It looks like an evaluation of the predictive probabilities over multiple univariate distributions with the stored parameters for all previous time steps/run lengths. Why is this necessary?

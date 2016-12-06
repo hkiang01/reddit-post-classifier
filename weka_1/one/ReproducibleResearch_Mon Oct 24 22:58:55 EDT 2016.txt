@@ -1,7 +1,0 @@
-Just came across this github thread:
-
-https://github.com/ibab/tensorflow-wavenet/issues/47#issuecomment-255918245
-
-which didn't seem to reach much of a conclusion about why the WaveNet results were hard to reproduce. Since this paper made such a big splash with the ML community, has anyone been able to actually create wave forms of the same audio quality as the blog post?
-
-I've come across a lot of open source implementations based on the paper, but none of them have reproduced anything like DeepMind's results.

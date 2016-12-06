@@ -1,1 +1,0 @@
-Someone(without phd) with publications at top conferences(eg NIPS,ICML for someone in ML) is considered equivalent to someone holding a phd(eg in ML)? If yes, is it possible to do so(publish at top conferences without phd)? Has anyone done this?

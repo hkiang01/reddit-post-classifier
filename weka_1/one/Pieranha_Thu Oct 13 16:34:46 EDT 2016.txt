@@ -1,5 +1,0 @@
-The Densely Connected Convolutional Networks paper (https://arxiv.org/abs/1608.06993) is really interesting to me as is the older ResNet paper (https://arxiv.org/abs/1512.03385). However, I'm intrigued by many of their design choices. In particular: 
-
-1. Why do they use average-pooling instead of max-pooling at the end of their network? If each neuron is a feature extractor and the final neurons can capture quite complex patterns, then I would assume that you're more interested in whether a single neuron was triggered with that pattern than the average firing of neurons. Has there been any results showing that average-pooling is better than max-pooling?
-
-2. Why do they not use a large fully-connected layer at the end of their network? Suppose that each neuron captures a separate pattern. Then combining these patterns using a fully-connected layer would make sense. This was common for e.g. AlexNet (https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-)

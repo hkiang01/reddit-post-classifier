@@ -1,1 +1,0 @@
-In the existing literature of deep learning, is there any work that deals with capturing uncertainty like Bayesian models do? Like, for example, can they result in a predictive distribution that has low variance if the test point is similar to training data and has high variance if the test point differs greatly from the training data (think of being far in the input data space)

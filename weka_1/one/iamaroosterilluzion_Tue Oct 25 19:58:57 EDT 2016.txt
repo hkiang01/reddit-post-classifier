@@ -1,8 +1,0 @@
-For example, if you're an ML / software engineer at an ecommerce company and you're tasked with building a product recommendation engine, what might your software architecture look like?
-
-- Does your data come in from an ETL-like process?
-- Where do you store your data? Postgres, Hadoop, a csv file?
-- How do you manage the training and prediction processes for the model? Do you run them as cron processes or synchronously as new data comes in? Does the model "live" on a server?
-- How does the ecommerce app get recommendations from the model? Do you build a REST API on top of the model to serve the recommendations?
-
-Another example might be a lead scoring engine, would the architecture look completely different or are there a set of best practices?

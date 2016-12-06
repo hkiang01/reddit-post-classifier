@@ -1,1 +1,0 @@
-Need help cloning? Learn how to clone a repository. Atlassian SourceTree is a free Git and Mercurial client for Windows. Atlassian SourceTree is a free Git and Mercurial client for Mac.

@@ -1,4 +1,0 @@
-I have been learning Tensor Analysis lately, and realized that the space whose coordinates are the weights of neural network is not flat. Meaning that, gradient descent may not propose the shortest path, geodesic, to a local minima. 
-My question then is, can we speed up the training by making the updates not with the gradients but with covariant derivatives of the cost function?
-
-I am sorry that I could not phrase the question better.

@@ -1,3 +1,0 @@
-I had a question about transfer learning. As I understand it, given an application (without sufficient training data), transfer learning is basically using models trained on similar applications (which do have a lot of training data) and performing additional learning on these already-trained models with whatever little data I have.
-
-How is this different from having a dataset with data instances from both applications mixed? One could also oversample the few training examples from our required application to prevent the other training examples from overpowering the model weights.

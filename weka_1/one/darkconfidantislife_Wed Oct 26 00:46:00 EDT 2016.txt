@@ -1,3 +1,0 @@
-Hi guys, I'm having a bit of trouble understanding the difference between transposed convolution (deconvolution) and dilated convolution. Could someone please explain it to me? From what I understand, they both seem to be the same thing, you "expand" the matrix by interpolating with 0s to make the dimensions bigger and then convolve as normal.
-
-Thanks in advance :)

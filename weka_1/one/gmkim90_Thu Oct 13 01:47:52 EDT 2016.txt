@@ -1,8 +1,0 @@
-In "Improved Techniques for Training GANs", I am surprised by performance of semi-supervised learning presented in paper.
-
-But I am not sure how semi-supervised learning perform better than others such as Auxiliary Deep Generative Model(ADGM) or Ladder network. 
-
-As I understand, unlabeled data is discriminated from negative class (class# = K+1), and does not learn which class it could be. 
-However, ADGM seems trying to infer class of unlabeled data. 
-
-I really appreciate any comments/insight how it performs well.﻿

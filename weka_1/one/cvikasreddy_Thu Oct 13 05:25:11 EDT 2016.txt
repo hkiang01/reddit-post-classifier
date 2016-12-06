@@ -1,5 +1,0 @@
-I was training InfoGAN on mnist with one continuous and one categorical variable.
-
-Interestingly the continuous variable is capturing it's category(0-9) and the categorical variable is capturing some other information.
-
-What might be the reason?

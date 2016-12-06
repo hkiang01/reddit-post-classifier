@@ -1,3 +1,0 @@
-Hi ML! We have a ton of tutorials and discussions about ML hardware systems/providers and libraries/frameworks here, but I feel we don't talk nearly enough about the workflows we use to utilize those technologies, which are often just as important to success. 
-
-So let's have a quick chat about ML workflows! How do you spend your time? What tools do you use on a typical project, and in what order? How did you arrive at your current workflow, and what do you wish you could improve with it?

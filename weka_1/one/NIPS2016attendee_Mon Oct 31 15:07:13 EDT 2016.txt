@@ -1,5 +1,0 @@
-Just got an email regarding one of my rejected papers:
-
-&gt; as we had announced in our notification email for NIPS 2016, we would like to give authors of rejected NIPS submissions the opportunity to advertise their paper on an official NIPS webpage, in the spirit of the exhibition of rejects (see our source of inspiration https://en.wikipedia.org/wiki/Salon_des_Refus%C3%A9s).
-
-I know they cite an event that used to happen over 150 years ago as inspiration, but is there really a point now that arXiv exists? Was there some background discussion by the organizers? I feel like creating something like this undermines the review process for academia.

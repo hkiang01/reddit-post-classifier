@@ -1,3 +1,0 @@
-Hi Reddit Machine Learning Community,
-I dont know if this question suits this subreddit so apologies for my ignorance.
-I am planning to get my feet wet in the deep learning and eventually using amazon/azure for data processing purposes. But till then I want to experiment with initial Kaggle data-sets like Titanic , MNIST etc. and I am planning to buy a gaming laptop for the same. I am not in a position to buy a desktop as I dont have the space for it ( currently sharing room with roommates) and I want my workstation to be mobile. Can anyone provide me any suggestions opinions? My budget is betweeen $1000-$1500.

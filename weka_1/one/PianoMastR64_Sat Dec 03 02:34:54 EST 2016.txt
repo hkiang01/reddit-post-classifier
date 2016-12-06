@@ -1,3 +1,0 @@
-Layman here, but tell me what you think. Take many seperate neural networks and train them all to master the same specific task. Then take another neural network and train it on the neural data (every neuron and their connections and weights) of every one of those networks for the purpose of finding all the common structures. Once that network is trained, run it in reverse and output neural data to get a network that represents a generalized version of all the others. Then analyze that network to see what seems to be necessary to do that particular task.
-
-I'm operating under the assumption that each individual network, even when trained on the same data, is very different from the others on the surface, yet similar in many ways that are hard to see.

@@ -1,5 +1,0 @@
-Hi, anyone interested in maintaining/contributing to a repo for your custom utility functions(Callbacks, Data processing, Training monitoring, code examples etc.) and hacks that you use in your day-to-day work in Keras. 
-
-Plug- https://github.com/ishank26/Kutils  
-
-Edit: My work is tiny as compared to other third party libraries for Keras. fchollet maintains a list of keras related projects- https://github.com/fchollet/keras-resources. IMO since keras development is distributed and the source has many issues, it will be better to have a curated list or a repo for hacks.  

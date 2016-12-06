@@ -1,2 +1,0 @@
-Goodfellow et al.(https://arxiv.org/abs/1412.6572) say that neural networks can be fooled by adversarial examples because of their highly linear nature.
-I thought neural nets were highly non-linear classifiers. Can someone shed light on what I'm missing here?

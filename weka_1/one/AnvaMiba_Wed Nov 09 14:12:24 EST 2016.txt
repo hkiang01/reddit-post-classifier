@@ -1,5 +1,0 @@
-I'm looking for datasets (possibly used by established benchmarks) for domain adaptation of the supervised kind: where you have labeled samples for both the source and target domain, but the target domain has much less training examples.
-
-So far I've found the [Multi-Domain Sentiment Dataset](https://www.cs.jhu.edu/~mdredze/datasets/sentiment/) and some image datasets by [UC Berkeley](https://cs.stanford.edu/~jhoffman/domainadapt/#datasets_code), but they are quite small. I'm interested in something a bit bigger and more challenging, but not as big and challenging that it takes one week/GPU to run one experiment (so no machine translation or image captioning).
-
-Also, anything for which a baseline neural network implementation in Theano/Tensorflow/Torch exists would make my life easier. Any suggestion?

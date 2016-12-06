@@ -1,5 +1,0 @@
-In decision tree classifier most of the algorithms use Information gain as spiting criterion. We select the feature with maximum information gain to split on.
-
-I think that using accuracy instead of information gain is simpler approach. Is there any scenario where accuracy doesn't work and information gain does?
-
-Can anyone explain what are the advantages of using Information gain over accuracy as splitting criterion?

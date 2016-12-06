@@ -1,2 +1,0 @@
-How can I train a GO chess engine using reinforcement learning when the size of the board is smaller than the standard size?
-The normal way is using database chess game( when training a board with standard size). I want to know what is the best way to train if the size of my board is different(smaller) from standard GO board size? 

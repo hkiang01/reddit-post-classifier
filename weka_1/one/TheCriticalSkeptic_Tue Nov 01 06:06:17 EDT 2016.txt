@@ -1,7 +1,0 @@
-As I've been playing with char-nn in Tensorflow I've noticed that there is a local minima (of sorts) where simply outputting spaces gives the best loss minimisation. It takes very few batches to get to predicting only spaces and then it slowly learns which other characters may be useful before moving on to short words.
-
-With a relatively small network, fewer layers, and/or shorter sequence length it can start to output semi-coherent text pretty quickly. Making the leap from semi-coherent to coherent seems like it will take a larger network with more layers. But the larger the network the harder it seems to be to push past the local minima of outputting spaces.
-
-I'm not sure if it's the corpus I'm using or if anyone else has experienced this?
-
-Does anyone have a good guide or can recommend a paper that suggests how to fine tune hyper parameters for char-nn? 

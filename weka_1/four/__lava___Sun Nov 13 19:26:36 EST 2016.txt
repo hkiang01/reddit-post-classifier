@@ -1,1 +1,0 @@
-Implementation of Spatial Contrasting Network in Keras. Included are three models: Images of each network and the weights from their first layers are in ( and sub-directories, respectively). Please help me reproduce the results from the paper!

@@ -1,1 +1,0 @@
-This repo is a TensorFlow implementation of Specifically, we follow the experiments in and try to reproduce the results in Table 1 and Figure 2. The fast weights model can achieve 100% accuracy (0% error rate) on R=50 setting in ~30K iterations. Both trained on GTX 980 Ti, with TensorFlow 0.11rc1. Setting on R=50, using ADAM optimizer with default parameters.

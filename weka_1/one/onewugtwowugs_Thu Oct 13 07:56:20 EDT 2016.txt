@@ -1,3 +1,0 @@
-I'm interested in comparing the performance of various word embedding models, and my work would be greatly simplified if there already was a collection of these trained on various popular models and large corpora out there somewhere. I have found a few repositories containing pre-trained models, but nothing where the models have all been trained on the same corpora. Have you seen anything like this?
-
-Thanks

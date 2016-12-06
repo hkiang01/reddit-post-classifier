@@ -1,2 +1,0 @@
-Currently, I'm working on project that need to extract real estate information from various sources. My best way I can think of is using regexes. I love deep learning approaches and would like to give it a try but I haven't found any good approach yet. Can you give me some suggestions on this?
-Thank you so much.
