@@ -202,7 +202,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        executorService.shutdown();
         return retval;
     }
 
