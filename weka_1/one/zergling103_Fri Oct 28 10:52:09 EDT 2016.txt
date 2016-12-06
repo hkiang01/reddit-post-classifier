@@ -1,0 +1,7 @@
+So, I've been thinking about how the activation function you use can change how easy it is to train your NN. There are: Sigmoid, tanh, rectifier, leaky rectifier, softplus, etc.
+
+This had me thinking: Perhaps as part of the training process, one could allow the network to change activation functions on individual neurons to see how this improves or degrades its performance.
+
+Of course, switching from two discrete activation functions abruptly (rectifier to tanh) would likely be too drastic of a change to work, especially with deep networks. So perhaps if you had a more complex activation function that could be parametrically adjusted to take on the form of most simpler activation functions, one could let the network decide what flavour of activation works best by adjusting the parameters in the same way weights are trained.
+
+Has something like this been explored?

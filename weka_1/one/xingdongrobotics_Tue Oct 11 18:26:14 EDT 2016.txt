@@ -1,0 +1,5 @@
+As an example of mine, I am doing a semester project related to GAN with possible variations, and currently I am reading GAN, DCGAN papers, and would like to write the code compatible to original paper as a preparation to my own project. 
+
+I tried several days, and realize that if I want to write code from scratch, it will take too much time before getting an executable network, (e.g. only under numpy and tensorflow). So I would like to listen to advice that if it is still recommend to just use Keras/TF-Slim to ease and accelerate the implementation, and when it is done, then to write detailed code in a "top-down" fashion. 
+
+The main reason why I hesitate to either write code totally from scratch or simply use TF-Slim/Keras, is that I found many recent paper authors' repo actually does not often use these high-level wrapper, but include lots of detailed code. 

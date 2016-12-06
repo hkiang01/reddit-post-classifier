@@ -1,0 +1,4 @@
+I am a 3rd year CS student and I am trying to create an application which will auto-group photos of the same person like google photos does.
+I understand that I can use methods such as k-means, but that would be too slow. Is there a deep learning alternative I can use?.
+
+I have alright knowledge of basic neural networks and cnns having done the cs231n course. But all of the methods they discuss are supervised ones...can someone point me in the right direction? thank you.

@@ -1,0 +1,1 @@
+Software OCR for printed documents (e.g. ABBYY FineReader) is becoming quite good, but I haven’t been able to find any literature on which techniques are used. I’m assuming the best results are using a CNN based pipeline but would appreciate if someone could point me to some papers on the topic. Thanks!

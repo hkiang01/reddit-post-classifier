@@ -1,0 +1,7 @@
+Hello there. I'm tasked with using Recurrent Neural Netwroks to generate source code from a chunk of javascript projects.
+
+Firstly, I implemented Karpathy's lstm-char-rnn in keras. It provided some fun results. After that I'm looking for a different way to approach the problem.
+
+As an idea, I wanted to label the characters extracted from the dataset (based on their usage in the code: string, identifier, numeric and so on), thus creating 2dimensional input. I would also like the output to be 2dimensional. I googled around and found no information as to how to implement it. Is there any known approach to having 2 dimensional input &amp; output of sequences with RNNs? Is there some other topology that could help me map sequences to sequences?
+
+Thank you.

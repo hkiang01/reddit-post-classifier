@@ -1,0 +1,3 @@
+I am reading the [normalizing flow paper](https://arxiv.org/pdf/1505.05770v6.pdf) and am a bit confused. 
+
+It seems that being able to model complex (i.e. correlated?) posterior is one of the advantages of the proposed approach (e.g. Section 2.3, last paragraph). But for a deep latent Gaussian model with diagonal covariance, the posterior can also be arbitrarily complex. So why is normalizing flow considered to be more expressive? What did I get wrong? 

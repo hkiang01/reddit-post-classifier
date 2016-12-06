@@ -1,0 +1,20 @@
+I'm playing with this tutorial:
+http://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/#comment-372293
+
+it works good, maybe to good:
+
+https://s11.postimg.org/850qb6iab/flight_data.png
+
+(green = fit, red = prediction, blue = data)
+
+
+So i tried to use the same hyper parameters to predict a dataset made of noise, and this is the result:
+
+https://s12.postimg.org/q0qsq4k19/noise.png
+
+(blue = data, green = prediction)
+
+here you have the full code:
+http://pastebin.com/HegMAjwj
+
+what am i doing wrong?

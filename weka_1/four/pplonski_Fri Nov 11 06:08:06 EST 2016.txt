@@ -1,0 +1,1 @@
+MLJAR is a platform for rapid prototyping, development and deploying pattern recognition algorithms. In this tutorial the process of building binary classifiers on dataset from Numer.ai competition is presented.Please subscribe for beta at https://mljar.com

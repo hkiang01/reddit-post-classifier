@@ -1,0 +1,3 @@
+Hi,
+
+i honestly don't get it. Don't get me wrong, I am a huge fan of open-source, but it's 2016 and researchers are still publishing their deep learning implementations in proprietary MATLAB. Thus, their work is unaccessible to most of us. What are your best-practices of getting these implementations to work (especially caffe-based matlab code)? Compiling the code to C? Thanks a lot!

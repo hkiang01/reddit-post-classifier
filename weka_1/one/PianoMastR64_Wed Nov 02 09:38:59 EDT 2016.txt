@@ -1,0 +1,3 @@
+Imagine taking an ANN and training it on an emulator rendering a game using the active hex data of the rom (which would contain the player input), the raw pixel output and perhaps the rom file itself. It's objective would be to generate an accurate live video stream using only the rom file and the player's input that's as close to what an emulator would give as possible.
+
+Is this a feasible project?

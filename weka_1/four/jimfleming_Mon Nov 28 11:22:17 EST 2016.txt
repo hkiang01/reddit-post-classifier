@@ -1,0 +1,1 @@
+This repository contains an independent TensorFlow implementation of recurrent entity networks from Tracking the World State with Recurrent Entity Networks. This paper introduces the first method to solve all of the bAbI tasks using 10k training examples. Percent error for each task, comparing those in the paper to the implementation contained in this repository.

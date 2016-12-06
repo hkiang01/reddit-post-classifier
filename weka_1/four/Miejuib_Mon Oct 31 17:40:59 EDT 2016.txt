@@ -1,0 +1,48 @@
+https://github.com/Miej/GoDeeper
+
+
+Hey guys, just thought some of you might enjoy this.
+
+
+I've set up an community AMI on aws that I've done a simul-build of a lot of the bleeding-edge releases of some of the most popular machine learning/deep learning packages/modules around.
+
+
+Some hilights: 
+
+p2.xlarge 
+
+NVIDIA Tesla K80 
+
+Ubuntu 14.04 
+
+CUDA 8.0 
+
+cuDNN 5.1 
+
+OpenCV 3.1 
+
+Spark 2.0 
+
+Caffe 1.0 
+
+Tensorflow 
+
+Theano 
+
+Keras 
+
+Torch 7 
+
+Microsoft CNTK V2 
+
+R 
+
+Scala 
+
+Julia
+
+
+I went through a lot of headaches getting this set up, so hopefully this can help newcomers in the field of ML/DL get their feet wet with some code in different systems/languages without any of the hassle of dependency version conflicts and source build seg faults :D
+
+
+Enjoy!

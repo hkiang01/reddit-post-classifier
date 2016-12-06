@@ -1,0 +1,5 @@
+https://github.com/frownyface/dnc
+
+This is my first time implementing a paper - would like thoughts and critiques about code style and actual implementation. Also if anyone has an insight for the TODO section, it would be greatly appreciated.
+
+Re-submit to follow rules and see if it garners any attention. 

@@ -1,0 +1,26 @@
+I find Keras a very useful and well done tool. It is perfect to start using Theano and it is really easily understandable and usable.
+Now, I realised a Keras model (using Theano interface), which works perfectly well and I would like to replicate it using only Theano code.
+Since Keras is actually using Theano code, I should be able, in principle, to do this.
+The neural net is a convolutional neural network for a one output regression task, with the following layers: conv2d, maxpool2d, conv2d, maxpool2d, dense, dense, output and using Adam optimizer.
+Unfortunately, despite it seems to me that I implemented exactly the same neural network with vanilla Theano code, the performance is consistently different.
+So, I guess I must be wrong somewhere, but I can't see where.
+
+I will put here a link to the codes I'm using, in order to make the post too long. They are short and simple codes, do not worry =)
+
+[Keras Impl.](http://pastebin.com/7eNubwxw)
+
+[Theano main](http://pastebin.com/Lvdn6UAc)
+[Dense layer with MSE loss function](http://pastebin.com/RyUH07Te)
+[Conv layer + max pooling](http://pastebin.com/VVmXm1Uk)
+[Updates rule](http://pastebin.com/fp5Draq7)
+
+
+Keep in mind that the Theano code is mostly adapted from the Theano tutorial found on the website, and the update rules for Adam optimizer is adapted from Keras source code.
+I have a large training set, so I usually check after a few epochs the behaviour of the code and this is what I see:
+Keras Model: the validation error keeps decreasing, and already after two or three epochs I see a very good match between prediction and true values (points quite close around the bisector in the plot at the bottom of the code)
+Vanilla Theano Impl: the validation decreases at first, but then some kind of oscillating/overfitting features appear (and the absolute value is 10 times higher than in the Keras impl.), and the match between prediction and true values is worse (points quite spread around the bisector in the plot at the bottom of the code)
+
+So, is someone able to tell me where is the difference between the Keras model and my Theano implementation? Since I'm new to the field, I would really like to understand what I'm doing wrong that so strongly affects the performance of the network.
+Any help would be appreciated. Thanks
+
+EDIT: please note, Keras default params initialization is glorot uniform, which is exactly what I use in the Theano impl. Biases instead are initialized to zero in both cases.

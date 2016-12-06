@@ -1,0 +1,1 @@
+I need classes for the ImageNet 32x32 dataset present here: http://image-net.org/small/download.php. The tar file has a folder with all the images, but does not have any file linking the images to their respective classes. Is there an efficient way to get the classes for these images?

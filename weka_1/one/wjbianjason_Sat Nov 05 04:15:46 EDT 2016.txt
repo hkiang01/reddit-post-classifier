@@ -1,0 +1,1 @@
+To be specific,when I input some isolate words ,then the model generate one nature sentence which contains these input words.For example,I input "girl white beautiful",then generate this sentence "that girl in white shirt looks beautiful".I'm confused to solve this problem,so please anybody help me.

@@ -1,0 +1,3 @@
+[D] Is Machine Learning Growing at an Exponential Rate?
+
+In terms of accuracy? Or any other metrics? I am researching the field. If anyone could point me to any resources about how fast ML is growing, I would greatly appreciate it!

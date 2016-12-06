@@ -1,0 +1,32 @@
+Hi, 
+I'm an undergraduate student working on a text generation task. I am unable to train a network using my pretrained word embeddings as weights for input layer to LSTM. My word2vec embedding is trained on a larger corpus and the training corpus is a subset of it. I'm mapping word vectors to embedding weights using word2vec model. My vocabulary for the task consists of some word2vec_vocab+additional words in corpus. The model is as follows:
+
+Train data: vector with indices mapped using a dictionary consisting of word2vec model indices + additional word indices = full dict
+
+Test data: one hot vector with 1 at position w.r.t corpus(I am not using full dict for mapping, thus position indices differ.)
+
+**Model**:
+
+ w2v_dim= 200
+
+seq_length= 7
+
+vocab_size= # of unique words in corpus
+
+
+model.add(Embedding(corpus_size, w2v_dim, mask_zero=False, weights=[embedding], input_length=seq_length)) 
+
+model.add(LSTM(memory_units, return_sequences=True, init= "orthogonal"))
+
+model.add(Dropout(0.5))
+
+model.add(TimeDistributed(Dense(vocab_size, activation='softmax', init= "orthogonal")))
+
+
+
+**Problem**: Model overfitting on training data with increasing loss on validation set. 
+
+
+What am I missing? What else can I do to improve the model? Thanks.
+
+ 

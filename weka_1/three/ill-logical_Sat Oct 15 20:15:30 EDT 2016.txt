@@ -1,0 +1,5 @@
+For the Q&amp;A task, Graves *et al* report 16.7% mean error and 3.8% best error (over 20 runs).
+
+Given such a big variance of the results, does it really make sense to compare them between different architectures (*e.g.* 4.2% and 7.5% MemN2N error)?
+
+I'm glad that Graves *et al* are reporting the mean error too. It was apparently considered OK to just report the best error over many runs and an unspecified, but potentially astronomical number of hyperparameter grid search trials on this dataset.

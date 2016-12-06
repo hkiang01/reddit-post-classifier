@@ -1,0 +1,26 @@
+Hi,       
+I have been playing around with neural nets, trying to create one that requires little data and would be able to create logic just from reading random articles on Wikipedia/comment sections. In my research on the brain I seem to have come upon some attributes of the braing that seem fundamental to how we learn.
+    
+Let me also state that I'm not a classical student of ML so my awareness of the different methods out there is limited. **So my question to you is: How many of these attributes have been implemented in some type of neural net model already?**
+       
+As you will notice many of the ideas are inspired by processes in the human brain. The reason I think this is a good approach is that most of the information we would like a computer to understand is already encoded for humans, so a model close to the human brain should be effective for making sense out of that information. 
+       
+**1. Flow within same layer**
+What I mean by flow is transfer of "charge" from one neuron withing a layer, to another within the same layer (same level of abstraction).
+      
+As far as I've seen most neural nets only transfer charge between layers, (through pathways with different weights), never between neurons within the same layer.
+     
+The reason why I believe this would be beneficial is that by doing that you would come closer to how our brains work (thus need less data for the creation of usable abstracts). For example it is easier to play a song on the guitar from the start, than from the middle. This could be explained by a wave of "charge" building up as the charge flows through same level abstractions (chords). In a similar way we often can answer a question more easily if we first replay it in our head (building up a wave of charge) or even repeat the question again out loud. In both cases this accumulating charge flowing from neuron to neuron will increase the likelyhood of a highly connected neuron to trigger. **Example:**
+      
+"My name is..." make my brain fill in the dot with "thelibar" almost instantaneously. If one would to say "name is" or just "is" the brain is less likely to give "thelibar" as a response since there has been no build up of flow.
+      
+**2. Separate abstractions of data by time pauses.**
+When we read, every blankspace, dot and comma is a slight pause in our internal reading of the sentence. My hunch is that we structure information this way because it lets the neurons in the brain "cool down". By allowing a minimal pause between each word we assure that letters that are highly related (constitute one word) bind to each other more strongly than letters between different words. For this process to function neurons that have higher charge (were triggered more recently) will also bind more strongly to the currently triggered neuron.
+     
+My guess is that this is why humans are really bad at reading sentences without blankspaces, or in general process information when it is presented without any intervals to divide the information into discrete chunks (abstracts). 
+       
+Of course it would not be time that was passing once this concept is translated to a artificial neural net, but rather it would be a decrease in the charge of a neuron that represents time having passed.
+    
+
+    
+Please let me know if what I mean is unclear and I will try to explain better.

@@ -1,0 +1,1 @@
+A Tensorflow Flow implementation of Google Brain's recent paper (Learning to Protect Communications with Adversarial Neural Cryptography.) Two Neural Networks, Alice and Bob learn to communicate secretly with each other, in presence of an adversary Eve. First, ensure you have the dependencies installed. To train the neural networks, run the script.

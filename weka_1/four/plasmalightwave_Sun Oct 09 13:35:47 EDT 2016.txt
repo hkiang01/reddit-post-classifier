@@ -1,0 +1,22 @@
+Hello! I've just started learning ML. I've been learning about Logistic Regression using Gradient descent. I followed two tutorials:
+
+https://www.coursera.org/learn/machine-learning/home/week/3 http://nbviewer.jupyter.org/github/tfolkman/learningwithdata/blob/master/Logistic%20Gradient%20Descent.ipynb
+
+I used the spambase dataset from UC Irvine's repo: https://archive.ics.uci.edu/ml/datasets/Spambase
+
+The steps in my program are as follows:
+
+    1. read data from the text file; num_features = 57, classes = 1 (spam=1, not-spam=0)
+    2. Normalize feature matrix using (X-mean)/Std_Deviation
+    3. Initialize parameters theta to zeros, learning rate to 0.01
+    4. Train theta by running gradient descent while calculating cost; terminate when cost does not 
+       change by more than 0.0001 AND at least 1500 iterations have run
+    5. Test the classifier on the same input data set (predict output=1 if probability is &gt;=0.5)
+
+However, my model/classifier has low accuracy (~52%) in it's prediction. I calculated accuracy by comparing how many data points the classifier got right and calculating the mean. I experimented with different learning rates/number of iterations but always get the same accuracy.
+
+I'd really appreciate it if someone familiar with logistic regression could review my code and point where I'm going wrong:
+https://github.com/codewarrior07/ml/blob/master/LogisticRegression_spambase.py
+
+I also plotted the iterations vs cost using pyplot; I get the following result:
+http://imgur.com/a/kjB09

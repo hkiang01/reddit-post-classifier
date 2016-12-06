@@ -1,0 +1,14 @@
+Hi Reddit!
+
+Alec Radford, Léon Bottou, and myself (David Lopez-Paz) will be hosting the [NIPS 2016 Workshop on Adversarial Training](https://sites.google.com/site/nips2016adversarial/) next week in Barcelona. Feel free to browse some of the [exciting collection of papers](https://sites.google.com/site/nips2016adversarial/home/accepted-papers) that will be presented at the event.
+
+The workshop features a one-hour panel discussion where our invitees (Soumith Chintala, Aaron Courville, Emily Denton, Ian Goodfellow, Arthur Gretton, Yann LeCun, Sebastian Nowozin) will discuss the current challenges and future research directions in adversarial training. **This post is a call for your participation!** We will collect the top questions, comments, and issues discussed here **until December 8 at 22:00 (Barcelona time)**, and share them with our invited speakers during the panel. Some examples of questions follow:
+
+* What are some promising approaches to stabilize the training of GANs?
+* What does recent research propose to promote sample diversity on GAN generators?
+* What are, in your opinion, the most exciting research directions on training with adversarial examples?
+* We seem far from generating real-looking ImageNET images; is this because we need better models, or more data? 
+
+The workshop program will be streamed via Facebook Live [in this group](https://www.facebook.com/groups/675606912596390/), so everyone will be able to join the discussion! The stream will then remain available in Facebook.
+
+We are looking forward to your participation, and to see many of you in Barcelona.

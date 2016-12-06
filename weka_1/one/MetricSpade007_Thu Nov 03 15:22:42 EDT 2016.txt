@@ -1,0 +1,3 @@
+Do people have a favorite use case or paper that uses sequence to sequence models and it works well? 
+
+Machine translation is the most obvious case, but other applications would be cool to see!

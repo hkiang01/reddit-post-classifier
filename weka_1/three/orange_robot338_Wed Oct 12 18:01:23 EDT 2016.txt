@@ -1,0 +1,5 @@
+I need something that I can reproduce paper results and experiment myself with different architectures and tuning, extracting embeddings and that sort of thing.
+
+I'm most familiar with Keras but I'm ok with not using it if isn't suitable for this. I know of a couple of frameworks such as TF, TF-Learn, TF-Slim, Theano so I'd like suggestions on which ones I should use. 
+
+Thank you very much.

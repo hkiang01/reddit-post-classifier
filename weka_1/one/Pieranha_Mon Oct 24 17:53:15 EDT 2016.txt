@@ -1,0 +1,5 @@
+I need to model the dynamics of time-evolving bipartite graphs, where one side, U, has nodes m=100 and the other side, V, has nodes n=5. There's roughly 50 time steps. The goal is to categorize millions of such graphs into one of 10 well-known labels, which are supplied with the graphs.
+
+Nodes in U have the same meaning across graphs, whereas this is not the case for nodes in V (i.e. nodes in U are ordered, whereas nodes in V are unordered). The graphs are unweighted, start with a single link and 1-3 links are added with every time step. Links cannot be removed. Each graph has the same # of nodes, but different # of timesteps. Most importantly, the link creation dynamics are wildly different. Capturing these dynamics are critical to do the labeling properly.
+
+What are some ways this could be modeled? I'm in the brainstorming phase so all ideas are highly appreciated!

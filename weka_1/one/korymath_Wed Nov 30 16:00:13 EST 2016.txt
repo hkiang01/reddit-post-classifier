@@ -1,0 +1,21 @@
+Hi Reddit!
+
+Saw a great idea from another workshop ([Adversarial Training](https://www.reddit.com/r/MachineLearning/comments/5fm66i/d_nips_2016_ask_a_workshop_anything_adversarial/)) at NIPS and decided to jump 
+
+[Kaushik Subramanian](http://www.cc.gatech.edu/~ksubrama/), [Robert Loftin](https://ciigar.csc.ncsu.edu/people/rtloftin) and myself ([Kory Mathewson](http://korymathewson.com)) will be hosting the NIPS 2016 Workshop on the Future of Interactive Learning Machines next week in Barcelona. You can find out more about the workshop at [http://filmnips.com](http://filmnips.com).
+
+The future-focused workshop features a panel discussion where [Matt Taylor](http://eecs.wsu.edu/~taylorm/) will facilitate a discussion with Todd Gureckis, Aude Billard, Olivier Pietquin, Michael Littman and others on open questions surrounding the Future of Interactive Learning Machines. **This post is a call for your participation!** We will collect the top questions, comments, and issues discussed here until **December 8 at 22:00 (Barcelona time)**, and share them with our invited speakers during the panel. 
+
+Some examples of questions follow:
+
+* For interaction between intelligent systems, how do we reconcile differences in sensation and actuation?
+* Autonomy and human-in-the-loop systems: Are they in conflict or do they have the same goals? Why?
+* What does success look like for Interactive Learning Machines? 
+* What is an effective measure of the communication capacity of agents?
+* What are fair expectations for humans working with interactive learning machines?
+
+Feel free to connect with us here, and on Twitter [@FILMNIPS](https://twitter.com/filmnips) for more ongoing discussion during the workshop.
+
+Even if you don't have a question, feel free to add to the discussion below.
+
+*We are looking forward to your participation, and to see many of you in Barcelona.* 

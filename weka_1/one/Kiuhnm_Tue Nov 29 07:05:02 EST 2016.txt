@@ -1,0 +1,5 @@
+I'm reading Mansinghka's [dissertation](http://web.mit.edu/vkm/www/vkm-dissertation.pdf) on Probabilistic Programming.
+
+The author claims that his method is a completely different take on representing probability distributions. Basically, he represents pdfs through samplers. The main advantage is that composing samplers is more efficient than composing pdfs.
+
+Either I'm missing something, or this approach is not really as revolutionary as the author seems to suggest. Isn't his idea just a direct generalization of Bayes nets to Turing-complete models? In fact, it's easy to sample from Bayes nets just by sampling from the conditional pdfs in topological order. In practice, I don't see any difference between composing samplers and composing conditional pdfs as we do in Bayes nets.

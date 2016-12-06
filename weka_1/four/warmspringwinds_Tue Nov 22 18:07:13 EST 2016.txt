@@ -1,0 +1,7 @@
+I have written up a couple of posts about Classification and Segmentation.
+Mostly as a progress report for myself in learning Tensorflow.
+Might be useful for someone :)
+
+http://warmspringwinds.github.io/tensorflow/tf-slim/2016/10/30/image-classification-and-segmentation-using-tensorflow-and-tf-slim/
+
+http://warmspringwinds.github.io/tensorflow/tf-slim/2016/11/22/upsampling-and-image-segmentation-with-tensorflow-and-tf-slim/

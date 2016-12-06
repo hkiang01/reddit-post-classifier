@@ -1,0 +1,7 @@
+I want to encode 1-5 sentences at a time using an approach similar to word2vec, but for paragraphs. I have 2 questions in this regard:
+
+1. Which method is the preferred approach for encoding such paragraphs? I've found Paragraph Vectors (http://www.jmlr.org/proceedings/papers/v32/le14.pdf), but the paper is a bit old in this very fast-moving field. Also, I'm particularly interested in capturing word order with the embedding, which may favor a specific approach. I'm not aware of the subtleties of the different nethods.
+
+2. I want to compare my embeddings of paragraphs. Suppose I have an embedding of a paragraph such as Paragraph Vector or an averaged word2vec. Would it still make sense to use cosine similarity between the embeddings like for word2vec?
+
+Thanks!

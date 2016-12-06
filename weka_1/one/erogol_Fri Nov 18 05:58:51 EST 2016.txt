@@ -1,0 +1,3 @@
+Suppose I have a trained CNN and a new set of data . I like to update this model with this new data. What are the suggested ways to do this?
+
+Currently I train the whole network with the whole data (old data + new data) with lower learning rate and cannot see any increase on the performance. Beside, this is not a scalable way when we consider large scale datasets since the whole data gets bigger and bigger as so the training time. 

@@ -1,0 +1,1 @@
+The Recurrent Batch Norm paper (https://arxiv.org/abs/1603.09025) reports 99.0% accuracy on flattened MNIST and 95.4% accuracy on flattened pMNIST. Does anyone know of other papers that do better? There's the Layer Norm paper (https://arxiv.org/pdf/1607.06450), but they only report results for non-flattened pMNIST using a CNN (and that layer norm doesn't help in that case).

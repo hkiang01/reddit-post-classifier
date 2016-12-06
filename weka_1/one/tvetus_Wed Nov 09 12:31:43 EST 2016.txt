@@ -1,0 +1,1 @@
+I'm having a hard time finding good information on this. How quickly and how accurately can information be extracted? To quantify it from an information theoretic perspective, how many bits per minute (or words per minute) would should I expect for a task like Morse code. Is it good enough to control a wheel chair in real time, safely? Response time?

@@ -1,0 +1,29 @@
+From the Hammersley-Clifford theorem, we know that an undirected graph is compatible (same independence assumptions) with a distribution if and only if it can be factorized over cliques:
+
+(1)    p(x) = 1 / Z   *   prod_c f_c(x_c)
+
+Subtlety: The theorem only applies to distributions that are everywhere positive, which in turn means that we can represent p(x) using an exponential:
+
+(2)    p(x) = 1 / Z   *   exp(  -sum_c f_c(x_c)  )
+
+(These new f_c's are not the same as the old f_c's.)
+
+Notice here that we can have model parameters inside the f_c's, and notice also that *we are not guaranteeing that the f_c's are linear in those parameters.*
+
+This theorem is discussed in Bishop's book, in Geman and Geman's classic paper, and many other sources.
+
+But some other sources, including but not limited to the [Wikipedia article on Markov Random Fields](https://en.wikipedia.org/wiki/Markov_random_field), state something else: that an undirected graph is compatible with a distribution if and only if the distribution has this form *and is log linear in its parameters*:
+
+(3)    p(x) = 1 / Z   *   exp(  -sum_c,k   w_c,k * f_c,k(x_c)    )
+
+with all of the f_c's being fixed functions (in other words, with no model parameters), and with k introduced to allow multiple feature functions per clique.
+
+So is this last statement true or not? I'm leaning toward not but would like a definitive reference if someone has one.
+
+Also, a toy example for discussion:
+
+p(x_1, x_2) = 1 / Z   *   exp(  ReLU(w * x_1 + w * x_2)  )
+
+We can verify that the independence properties are consistent with the graph x_1 ----- x_2.
+
+If the x are discrete, I can imagine transforming (2) into (3) by building a huge table of possible values and reparameterizing using many more parameters, though this doesn't seem like it'd be useful in practice. But if the x are continuous, then I see no way to equate (2) and (3).

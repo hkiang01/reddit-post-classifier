@@ -1,0 +1,18 @@
+I'm trying to build a Word2Vec type model in Tensorflow with my Vocab_Size &gt; 1,000,000 'words' (the 'words' are actually the id's of Wikipedia articles and I'm looking at the cross references between articles as the "surrounding words").  The problem I'm having is in constructing the embeddings matrix.  I keep getting OOM errors in TensorFlow.  The network is pretty small, and my memory usage feels like it should fit in my GTX 1080 (avail memory ~ 7.3GB).
+Batch Size = 1000 (I've tried a tiny batch size as well)
+
+- Input size (1000,1)  [single indexes so (batch,1)]
+- Embed_Lookup Table (1000000, 300)  [I've tried embed lengths even at 50]
+- Hidden_Layer_Weights [24 nodes] (300, 24)
+- Output_Layer_Weights (24, 1000000)
+
+So by my math, total memory usage should be approx (in MB, using 4 bytes per Float32):
+
+- Input = 4 * 1000 / 1024^2  &gt; 0.1MB
+- Embed_Lookup= 4 * 1000000 * 300 / 1024^2 ~= 1,144MB
+- Hidden_Layer= 4 * 300 * 24 / 1024^2 &lt; 0.1MB
+- Output_Layer=  4 * 24 * 1000000 / 1024^2 ~= 92MB
+Total Memory of Model ~= 1236MB ~= 1.2 GB
+
+Even accounting for a 2x memory usage on back-prop, that model should easily fit on my GPU.  Am I looking at this wrong? Or maybe I have my GPU/CUDA/CuDNN/TF configured wrong?
+Thanks!

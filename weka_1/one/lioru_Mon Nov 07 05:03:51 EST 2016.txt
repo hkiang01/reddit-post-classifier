@@ -1,0 +1,5 @@
+Hi all, 
+
+I read in http://openreview.net/pdf?id=Hyvw0L9el about an architecture that used to have NxN convolutions (PixelCNN), but in this paper they split it to 1xN followed by Nx1 (see Figure 3) .
+
+What can be the reason for this split?

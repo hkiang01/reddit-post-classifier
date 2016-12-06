@@ -1,0 +1,18 @@
+Current RNN Decoders for sequence to sequence tasks model conditional probability as a function of the input and the previous timestep's hidden state. Are there alternative architecture more intuitively appropriate? 
+
+We see interesting architectures for the encoder side, such as recursive networks like TreeLSTM and explicit hierarchical models, but why not invert a tree for use on the decoder side?
+
+My feeling is that the syntax of a prediction evolves secondarily following the semantic intent, and so decoding L-&gt;R is unnatural / suboptimal. When people speak, it's obvious we don't immediately know exactly what to say. It's likely there is a hierarchical process of decoding and organizing verbal phrases. 
+
+Full syntactic structure seems to be realized only after semantic intent. The intent is realized to what is likely a topical anchor word or subject around which the thought is structured. These topics or phrases can be seen as latent variables. Once these phrases are realized, it is a much easier process for the relationship, description, or information conveyed by the sentence to be arranged or generated with appropriate syntax, utilizing those pieces.
+
+Decoding L-&gt;R breaks this assumption, and makes the task more difficult than if prediction was sequence agnostic. For example, to verbalize the sentence "At that time, the meal tasted good.", a more probable pattern in which the 'latent variables' are mentally realized may be (in order of realization, with "|" indicating mental timestep):
+
+the meal **|** good **|** tasted **|** At that time, **|** .
+
+
+The default decoding direction is to predict the probability distribution after the previous token, but couldn't a 'copy mechanism' be modified to act as a Left/Right switch that allows the model to predict a distribution, but choose whether it belongs before all previous tokens OR after everything predicted?
+
+A more reasonable model with the same motivation would be to add more layers to the decoder. The point is to allow the first layer to predict probability distributions with a relaxed constraint on conditional probability of the next token, and the second layer would potentially capture information about the correct ordering of the previous layer's hidden states. Layers beyond the first would require more connections than just the previous RNN's hidden state, perhaps a connection to every cell in the previous layer. The flow of state would be forward in time across the first layer, and once the first layer completes, the first cell of the 2nd layer begins, forward across the entire 2nd layer, with each cell having a connection to every cell in the previous layer (or receiving their concatenated states). This could be modeled as a single chain RNN with peephole connections I believe. Has anyone tried this?
+
+**tldr;** Sequence prediction models' decoding in a left-&gt;right manner is suboptimal. Have there been experiments with multilayer or other decoder architectures using latent variables or hierarchical structure?

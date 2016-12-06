@@ -1,0 +1,5 @@
+From section 5.1:
+
+"We use orthogonal initialization for all weight matrices, except for the hidden-to-hidden weight matrix which we initialize to be the identity matrix, as this yields better generalization performance on this task for both models."
+
+This means that they used "orthogonal initialization" for the input-to-state matrix, which isn't square. Anyone know what they're doing here? My first guess would be to choose a random matrix that has all singular values of 1, but this doesn't seem to make any sense (for example it wouldn't even be length preserving).

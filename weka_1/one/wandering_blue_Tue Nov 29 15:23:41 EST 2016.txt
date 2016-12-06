@@ -1,0 +1,10 @@
+I was reading a [tutorial](http://fastml.com/classifying-text-with-bag-of-words-a-tutorial/) on text classification with bag-of-words features.  The author trains a random forest, and then speaks out against using such a model:  
+&gt;Random forest is a very good, robust and versatile method, however it’s no mystery that for high-dimensional sparse data it’s not a best choice. And BoW representation is a perfect example of sparse and high-d.
+
+&gt;We covered bag of words a few times before, for example in A bag of words and a nice little network. In that post, we used a neural network for classification, but the truth is that a linear model in all its glorious simplicity is usually the first choice. We’ll use logistic regression, for now leaving hyperparams at their default values.
+
+&gt;Validation AUC for logistic regression is 92.8%, and it trains much faster than a random forest. If you’re going to remember only one thing from this article, remember to use a linear model for sparse high-dimensional data such as text as bag-of-words.
+
+I'm looking for a more technical explanation as to why tree-based models are poor choices for high-d BOW features (e.g. a tfidf matrix) while linear models like logreg are the "go-to" choice.  
+
+Is this related to the [tendency of high-dimensional problems to be more linearly separable?](http://stats.stackexchange.com/questions/33437/is-it-true-that-in-high-dimensions-data-is-easier-to-separate-linearly)

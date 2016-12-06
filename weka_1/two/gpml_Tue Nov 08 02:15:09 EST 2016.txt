@@ -1,0 +1,1 @@
+PriceMinister is one of the leading marketplace of E-commerce in France, and is part of the Rakuten group, leader in Japanese market.  The goal of this challenge is to predict if a review of a user

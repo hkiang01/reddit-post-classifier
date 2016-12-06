@@ -1,0 +1,7 @@
+I am currently trying to work out a way to accurately classify documents into 3 different categories. The documents are rather lengthy, usually several thousands of words, unstructured and pretty much entirely full sentences. There are some keywords that increases the probability of the document belonging to one particular category, but not all of them are known.
+
+Until now I have tried to clean the documents by getting rid of punctuation, common stop words and non-alphabetical strings. Since only a small part of the text is relevant, I was planning to try a tf-idf process to identify significant words within the documents.
+
+Right now I am coding this in python with a combination of scikit-learn and nltk. Someone suggested me to construct a NN since I will be doing this same type of classification a bit longer.
+
+Do you have some other suggestions what I could try to increase the accuracy and efficiency of this classification? Also if you have some good resources for these kind of projects, I would be thrilled :)

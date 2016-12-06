@@ -1,0 +1,39 @@
+I was looking for a way to automatically create interesting puzzle
+levels for games through machine learning.
+
+Let's say I have 500 level valid gameplays (+ invalid gameplays, more can be generated if required) for a grid based puzzle game. Gameplays are essentially path from Initial State to Goal State through Intermediate States using various directional moves like move up, down, left or right.
+My question is "**Is it possible to generate interesting, complex initial game state so that it would be hard/fun to solve?**" 
+
+Many papers deal with learning to play a game(q-learning) , or learning a policy, etc. But I haven't come across a paper which talks about making a initial game state difficult so that its metrics are maximized like no. of moves required to solve are high, sequences of moves are distinct, etc.
+
+A general solution to such problems would be highly advantageous to game developers. Using other techniques like Monte Carlo tree search etc might be possible, but I guess it wouldn't be general enough or would be supervised in nature. *Here, all that is provided are gameplays.*
+
+
+The game I have in mind is this grid based puzzle game. 
+
+Orangle : https://play.google.com/store/apps/details?id=hi.brett.orangle&amp;hl=en 
+
+Youtube Trailer : https://www.youtube.com/watch?v=dTsSh5fTItw
+
+There is initial state. Direction moves like left, right, up and down which changes game state. Final goal state. Other states where no moves are possible (the game is stuck ) or the game goes into invalid state.
+
+Difficulty of puzzle can be approximately based on how many moves it requires to reach the goal state.
+ 
+It would be good if the puzzles generated are as varied as possible. 
+This could be measured by sequence of game moves required to solve the level. We can have stats on the number of different blue boxes and their sizes.
+
+Valid generated puzzles could be added back to the training data.
+
+
+Some questions that I have: 
+
+1] Since plays of the game would vary in number of steps (lets say max moves 20), how do I take the input. What should be my input neural network? Would providing the initial state be enough and proceed from that? Or having a complicated network learn the gameplays will be more intelligent.
+
+2] Do I have to specify goal state/invalid state/stuck state differently or will the network figure it out from the sample gameplays?
+
+3] Would a structure similar to Generative Adversarial Networks be advantageous here? Instead of discriminator network, we would have a module which exhaustively plays the game to reach goal state and then determines the label. 
+
+4] How do we make sure the initial states produced by the network do well
+on the metrics i.e. the game is interesting, varied, requires some clever thinking?
+
+I am not sure if people have already looked at this problem. I don't know what terms/keywords to search for. Any help would be highly appreciated.

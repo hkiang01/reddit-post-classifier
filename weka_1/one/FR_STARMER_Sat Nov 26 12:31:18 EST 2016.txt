@@ -1,0 +1,1 @@
+This makes compiling and running models take 5 minutes each, which means I spend all day tuning hyperparameters and trying new things out because most the time I'm waiting for the damn thing to link up to my GPU or to initialize the Theano backend / compile LSTM layers, yada yada. Why.

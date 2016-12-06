@@ -436,7 +436,7 @@ public class FilteredSubredditIngestion extends SubredditIngestion {
         String combinedPosts = "";
         for(Iterator<JSONObject> it = posts.iterator(); it.hasNext();) {
             String e = it.next().toString();
-            combinedPosts = combinedPosts + e;
+            combinedPosts = combinedPosts + e + "\n";
         }
 
         byte data[] = combinedPosts.getBytes();

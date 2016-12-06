@@ -1,0 +1,3 @@
+Below is a link to the Github repository that contains my solution for the competition alongside a brief description of the approaches I've used and plans for future work.
+
+https://github.com/inejc/painters

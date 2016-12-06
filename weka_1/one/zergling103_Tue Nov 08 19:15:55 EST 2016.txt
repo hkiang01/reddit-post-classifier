@@ -1,0 +1,11 @@
+I remember finding a paper about using NN's to compress image data, in a similar way to JPEG, where it is possible to vary the bits per pixel to get better or worse reconstructions.
+
+I found this: https://arxiv.org/abs/1604.08772 It used MSE or something to that effect, so as a result you'll get blurrier, indistinct results as you remove bits.
+
+However, there was a similar paper, which I think used adversarial techniques to ensure that the resulting sample was always natural-looking, where compressed patches always looked like real image data. Instead of getting blurry as you remove bits, the patches would look less and less like the image you gave it, but still look "realistic". In other words, the network hallucinated missing information.
+
+If anyone could help me find this paper, I'd be very thankful! In the meantime I'll look through my very long list of bookmarks of other papers to see if I find it first (assuming I bookmarked it). :)
+
+EDIT: Couldn't find it in bookmarks. Googling isn't helping. :(
+
+EDIT: Thank you very much for all of the interesting papers. :)

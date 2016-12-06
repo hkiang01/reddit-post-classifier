@@ -1,0 +1,1 @@
+Hey reddit! I was reading the proof of ADAM (link to paper: https://arxiv.org/pdf/1412.6980v8.pdf). Regret seems to shrink as beta1 gets smaller and gets closer to 0. So, in the proof we can just put beta1 to zero and everything still works fine, right? Am I missing something? Thanks :)   

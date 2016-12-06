@@ -1,0 +1,6 @@
+Nvidia is releasing a new [GPU](http://www.geforce.com/hardware/10series/geforce-gtx-1050)
+soon and I was wondering if this would be viable as a GPU for a budget hobbyist build to learn deep learning. Should this suffice or are there any other viable options that don't cost an arm and a leg? How would this compare to what I have now (solely on an i7-4790k)?
+
+Thanks in advance.
+
+(I'm a poor student and don't have a lot of money so the price tags of cards such as 1080, Titan X, etc. are out of the question).

@@ -1,0 +1,11 @@
+Hi All, 
+
+I am fairly new to Machine Learning, and I was hoping I could get some tips for improvement here. I currently have an AI set up that learns how to play the classic game of snake. 
+
+My problem is that the snake gets caught up moving in a particular direction initially, and ignores another direction. This means that it is able to find the food in it's path using 3 directions (normally: left, right, and down) and not 4, meaning that any food that spawns above the snake never gets found. 
+
+I would say the snake performs well in 1 out of 20 random starts. Which is very frustrating. With a smaller NN that does not take into acount the position of the snake's body and tail, it performs much better, but then is limited by its body size later in the game. 
+
+Any suggestions for improvement, would be greatly appreciated. 
+
+https://github.com/mraythree/SnakeGame

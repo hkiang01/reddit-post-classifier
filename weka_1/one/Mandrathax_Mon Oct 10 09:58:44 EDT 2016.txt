@@ -1,0 +1,26 @@
+This is a place to share machine learning research papers, journals, and articles that you're reading this week.
+If it relates to what you're researching, by all means elaborate and give us your insight, otherwise it could just be an interesting paper you've read.
+
+Please try to provide some insight from your understanding and please don't post things which are present in wiki.
+
+Preferably you should link the arxiv page (not the PDF, you can easily access the PDF from the summary page but not the other way around) or any other pertinent links.  
+
+|Previous weeks|
+|--------------|
+|[Week 1](https://www.reddit.com/r/MachineLearning/comments/4qyjiq/machine_learning_wayr_what_are_you_reading_week_1/)|  
+|[Week 2](https://www.reddit.com/r/MachineLearning/comments/4s2xqm/machine_learning_wayr_what_are_you_reading_week_2/)|  
+|[Week 3](https://www.reddit.com/r/MachineLearning/comments/4t7mqm/machine_learning_wayr_what_are_you_reading_week_3/)|  
+|[Week 4](https://www.reddit.com/r/MachineLearning/comments/4ub2kw/machine_learning_wayr_what_are_you_reading_week_4/)| 
+|[Week 5](https://www.reddit.com/r/MachineLearning/comments/4xomf7/machine_learning_wayr_what_are_you_reading_week_5/)| 
+|[Week 6](https://www.reddit.com/r/MachineLearning/comments/4zcyvk/machine_learning_wayr_what_are_you_reading_week_6/)|
+|[Week 7](https://www.reddit.com/r/MachineLearning/comments/52t6mo/machine_learning_wayr_what_are_you_reading_week_7/)|
+|[Week 8](https://www.reddit.com/r/MachineLearning/comments/53heol/machine_learning_wayr_what_are_you_reading_week_8/)|
+|[Week 9](https://www.reddit.com/r/MachineLearning/comments/54kvsu/machine_learning_wayr_what_are_you_reading_week_9/)|
+
+Most upvoted papers last week : 
+
+[Recursive Deep Learning for Natural Language Processing and Computer Vision](http://nlp.stanford.edu/~socherr/thesis.pdf)
+
+[The Controlled Thermodynamic Integral for Bayesian Model Comparison](https://arxiv.org/abs/1404.5053)
+
+Besides that, there are no rules, have fun.

@@ -1,0 +1,26 @@
+Nowadays I'm so used to see new research progress on tech news, and I think in general it is a good thing. But today I saw something really weird. This is a paper by a student and a professor at University of Toronto, Parham Aarabi.
+
+
+[Title] Hair Segmentation Using Heuristically-Trained Neural Networks
+
+[Abstract] We present a method for binary classification using neural networks (NNs) that performs training and classification on the same data using the help of a pretraining heuristic classifier. The heuristic classifier is initially used to segment data into three clusters of high-confidence positives, high-confidence negatives, and low-confidence sets. The high-confidence sets are used to train an NN, which is then used to classify the low-confidence set. Applying this method to the binary classification of hair versus nonhair patches, we obtain a 2.2% performance increase using the heuristically trained NN over the current state-of-the-art hair segmentation method.
+
+There's a publicly accessible student thesis illustrating the method proposed: https://tspace.library.utoronto.ca/bitstream/1807/72673/3/Guo_Wenzhangzhi_201606_MAS_thesis.pdf
+
+I'd say it is really a bad paper: the so called "Heuristically trained neural network" training is just using hand designed rules to extract hard/easy examples and train an NN (Yes, an NN, with one single hidden layer and 96 nodes... I'm dying here) to classify 4x4 patches.
+
+They seem not aware of any progress in convolutional neural networks, fully convolutional models for segmentation, let alone advanced matting methods that handle hair magnitudes better than their results even in the teaser images. (e.g. http://xiaoyongshen.me/papers/deepmatting.pdf)
+
+I'm okay-ish with these kind of frustrating papers if they are published on TNNLS, which is a bad journal. But I'm totally pissed off seeing news everywhere bragging and promoting this bs, and ending with a sentence "This is the future of AI."
+
+I sincerely hope those editors are just being sarcastic. 
+
+http://news.engineering.utoronto.ca/new-ai-algorithm-taught-humans-learns-beyond-training/
+
+https://www.sciencedaily.com/releases/2016/11/161116102203.htm
+
+https://futurism.com/ai-learns-things-that-humans-didnt-teach-it/
+
+http://www.cbc.ca/news/technology/hair-computer-deep-learning-1.3858365
+
+http://phys.org/news/2016-11-ai-algorithm-taught-humans.html

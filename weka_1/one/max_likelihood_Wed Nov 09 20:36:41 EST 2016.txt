@@ -1,0 +1,7 @@
+Hi! I am trying to fine-tune an already fine-tuned model (was fine-tuned from imagenet to PASCAL VOC 2007+2012 trainval) to MS COCO. Unfortunately, my caffe-based implementation (py-faster-rcnn) is running into dimensionality issues concerning the input and output layers, which are not trivial to solve. I have done quite some extensive research, but now I am wondering, if this is at all possible (only ML demi-gods seem to have accomplished this) or at all desirable? What is your intuition? Will an aggregated, big dataset with a subset of shared categories outperform a model that has been fine-tuned from dataset to dataset...to...dataset? Thanks a lot!
+
+update: there are two basic directions:
+A) fine-tuning an already fine-tuned dataset: 
+the pipeline would look like this: imagenet --&gt; pascal voc --&gt; ms coco --&gt; Caltech --&gt; KITTI. During this pipeline, for each dataset, I would change the last layers, while keeping the lower layers static. Also, for each dataset, there would be different categories. 
+B) Giant dataset:
+Putting all images from all datasets together to create a giant dataset, which I train on the small intersection of categories of each dataset (car, pedestrian).

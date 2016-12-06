@@ -1,0 +1,19 @@
+Hi everyone!
+
+I'm planning on doing my master degree in Machine Learning. I have some knowledge in the area, since I had done two undergraduate researches on it (one only tangentially related) and completed Andrew Ng's course in Coursera.
+
+Anyway, I need to make a simple research plan, maximum 30 lines long, to apply for the research. It's just so the professors analyzing my submission don't feel I'm completely lost in the area. In the end it will probably not be used, but it could, and it gives the professor some idea of what I want to do.
+
+Although the research plan will (probably) not be followed if I get selected for the master, I think it's important to do it well. So I was trying to come up with an interesting problem that I could tackle. With the help of some friends, I could think of a few directions to take:
+
+- Test many algorithms in CUDA to compare performance (if no one did this before)
+
+- Apply neural networks to solve some game problem (although it looks really hard to do something novel since they already somewhat solved even Go as far as I know)
+
+- Create a novel machine learning algorithm (but I have no idea what to propose)
+
+- Create a method to generate synthetic datasets based on real ones (not sure if it's a problem for a master thesis or if it's too easy)
+
+If I could research something that is good for humanity it would be even better, but I have no idea where to start on that, and I guess most things are being researched by people way more qualified than me.
+
+Thanks!

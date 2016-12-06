@@ -1,0 +1,10 @@
+Apologies in advance if this is the wrong place for this sort of post. If you guys are like me, you shift through hundreds of PDFs and haven't found a satisfactory research tool. I've been looking for quite some time and have not found one with the following set of features.
+
+ * ability to search by author or title and edit the meta data( you usually have to correct this ).
+ * ability to add multiple tags and search by tags
+ * web, mobile or cross platform (I prefer tablet)
+ * ability to annotate and share annotations with others
+ * collaboration, ability to share work spaces, PDFs, notes exc.. exc..
+ * drop box integration
+
+Is there something out there that has the following set of features? The closest tool I found is LiquidText PDF for the iPad however it's missing a quite a few features from the above set.

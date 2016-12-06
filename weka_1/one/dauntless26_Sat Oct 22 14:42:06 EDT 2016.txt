@@ -1,0 +1,3 @@
+I am using the blood transfusion dataset from UCI: https://archive.ics.uci.edu/ml/datasets/Blood+Transfusion+Service+Center
+
+No matter what features I remove (or even just leaving in one random feature) I get about the same results: 77% accuracy. Why is this happening?

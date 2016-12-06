@@ -1,0 +1,1 @@
+Inspired by [this](https://www.reddit.com/r/MachineLearning/comments/5asl74/discussion_discriminator_converging_to_0_loss_in/) discussion, I imagine it'd be helpful to gather some collective wisdom. If this goes somewhere, we could summarize to a Github FAQ for future reference. 

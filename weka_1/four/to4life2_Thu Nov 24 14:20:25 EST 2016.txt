@@ -1,0 +1,17 @@
+Hey guys, 
+
+I am looking for relevant papers and machine learning approaches/algorithms to tackle the following problem which I am trying to accomplish on my own hardware platform. Here is the description:
+
+- I have a simple robot arm with 6 joints and a gripper. 
+- It is mounted on a table, on this table is an object (say, a small wooden block) as well as a bucket. 
+- Mounted on the robot are multiple cameras (at the base and on top of the gripper) as well as on a few "stands" that overlook the table. Say there are between 3 - 6 RGB video sources at 640x480 pixels at 24 fps. 
+- The plan is to first manually program the robot - by moving joints individually (not physically but programmatically) - to complete the task of picking up the block and dropping it in the bucket. I will record this data: the motor commands (inputs) and camera video feeds (observations) during this "training demonstration". 
+- From there I want to use machine learning algorithms to let the robot arm automatically replicate the task again, if say its starting position is different, the block is placed at a different initial start location/orientation, the bucket is slightly moved, etc. 
+- We can assume that the object to picked up, and the bucket, will start within the reach/workspace of the robot arm. 
+- Bonus: while competing the sequenced task, I want to minimize objectives like the time taken to complete it, and the total amount of time each motor joint is powered, to minimize electrical power used.
+
+Is this problem fairly well defined? If not please tell me and I'll clarify further. The eventual goal is to just set up the scene with the robot on the table, the block and bucket nearby, then press "Go" on our computer and the robot will run its sequence of learned motor commands, using the video feeds and its learned algorithm, to complete the task, able to work with minor variations in the scene. 
+
+I have a background in machine learning, mathematics, and programming, but I do not know what recommended, say, newer deep learning algorithms and software frameworks might be a good fit for this job. 
+
+EDIT - please also feel free to recommend computing hardware and/or framework, my team has a decent budget towards this research project. So we can buy e.g. an awesome GPU, or get cloud computing, etc.

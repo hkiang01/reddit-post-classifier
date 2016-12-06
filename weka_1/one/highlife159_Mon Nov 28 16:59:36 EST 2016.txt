@@ -1,0 +1,4 @@
+So I've been working on a project for a few weeks now that requires me to extract text from scientific journals as completely and neatly as possible. Those of you that have done this before understand just how frustrating it can be to extract text from a pdf.
+
+So my question is, would it be feasible to use a CNN to extract the text from pdfs. All you would need to do is convert each page to an image and feed it to the network. My reasoning is that if they're already really good at classifying handwritten digits and text, they should have no problem classifying actual text from a pdf.
+

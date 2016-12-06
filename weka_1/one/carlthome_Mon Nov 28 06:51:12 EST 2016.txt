@@ -1,0 +1,1 @@
+tflearn's API looks pretty great, but it sure resembles Keras a lot. What are the upsides to using tflearn (and having to drop Theano support) instead of sticking with Keras? The open source community would be better served by consolidating efforts instead of having multiple, similar layer APIs.

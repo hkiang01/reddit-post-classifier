@@ -1,0 +1,5 @@
+Suppose you have image metadata you want to incorporate into a classifier, want to train an RNN over categorical data, or simply want a reference result for a problem where you expect SVM or RF to do best.  
+
+How do you preprocess the data and what transforms and architectures are known to work well?
+
+If you're incorporating high information features with image/audio data where you need the network to learn to extract features, how would you structure the model?

@@ -1,0 +1,9 @@
+Hello, fellow aficionados of machine learning!
+
+/r/LearnMachineLearning aims to provide a friendly environment to learn machine learning for redditors of various machine learning backgrounds. Whether you are a complete beginner who would like to begin your first machine learning project or a machine learning expert who wants to expand your boundary, anyone who wishes to *learn* machine learning is welcome. 
+
+Feel free to share any educational resources of machine learning. An educational resource could be anything from a professional blog article to tips you would like to share to the fellow redditors. 
+
+Also, we are a beginner-friendly subreddit, so don't be afraid to ask questions! This can include questions that are non-technical such as a systematic approach to a machine learning problem. 
+
+If you have any questions or suggestions, please don’t hesitate to comment on this thread or [the welcoming page](https://www.reddit.com/r/learnmachinelearning/comments/56vloc/welcome_to_rlearnmachinelearning/) at /r/LearnMachineLearning

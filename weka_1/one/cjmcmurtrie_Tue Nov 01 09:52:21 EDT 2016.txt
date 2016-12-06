@@ -1,0 +1,5 @@
+I have implemented models that are very good at generating handwriting, and models that are very good at predicting MNIST digits - but I am failing at producing anything that can produce a legible translation of real handwritten documents.
+
+I have tried various recurrent networks with some serious proprocessing hacks - I use heuristics to split documents images into lines, and feed columns of pixels into a recurrent network. I set up training data to align these with output characters (in itself a significant ordeal). But output is still far below threshold for real applications.
+
+Has anyone had better luck? Are there any pre-trained models online that perform this function, or any methods that are known to produce results?

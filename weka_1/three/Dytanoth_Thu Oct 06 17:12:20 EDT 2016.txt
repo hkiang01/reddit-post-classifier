@@ -1,0 +1,14 @@
+Hi all,
+I have been doing a thesis on speech recognition. Mainly about user experience, but I do want to know if I got the theory right behind the models. Please correct me if I'm wrong.
+
+The very very basic idea I've got:
+When we've got an audio stream, the HMM will divide it into "states" which are a set period of time (like 10ms). Those states contain a certain "wave" that makes up the sound. From this state a speech vector is taken, which will be send to either the GMM or DNN for recognition. The results of those recognitions are phonemes which combined will make words.
+
+The GMM plots the vector in a multi-dimensional graph, like [this](https://embed.gyazo.com/093bf77be2d25c26d26f75d5aa3419fb.png) and compares it to the acoustic model to find the most alike plot.
+
+The DNN recognizes the input as something it had seen before, and goes through different layers of hidden nodes to get the output data. As a DNN model was trained to get output "B" when input is "A" by backpropagation.
+I hope I got this right, as a lot of articles instantly mention different formulas. Which I really don't understand (yet).
+
+Does anyone know if I took anything the wrong way?
+
+Thanks you!

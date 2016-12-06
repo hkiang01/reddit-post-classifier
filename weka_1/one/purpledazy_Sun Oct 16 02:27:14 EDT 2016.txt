@@ -1,0 +1,30 @@
+I am having a problem formalising my data questions as probabilistic programming/graphical models, for some reason the gap between examples provided in various books and real-life scenarios seems too far to bridge. 
+
+For example -
+In one case my goal is to predict the number of months left for a building construction to be completed.
+The data I have available is a list of buildings in a region with those features:
+
+* When did the construction of each building started
+
+* The number of workers that worked/still working on its construction - per month since the construction started
+
+* Number of floors the building has/planned to have
+
+* Has the construction finished or not? (in the form of finish date or null)
+
+
+My ‘progress’ so far:
+
+* I think the model’s output of interest would be a distribution of ‘time it takes to complete a building' dependent on the number of floors, number of workers per month, and how many months have passed since the construction started.
+
+* The prior for that would be the current distribution months it took to complete the existing completed buildings (so filtering out all non-completed buildings from the dataset)
+
+* The number of floors parameter seems like it should be modelled as a hierarchical component (either each number of floors or a subgroup will have a different distribution of ‘number of workers per month’) - that’s based on a hunch that buildings with more floors require more workers but in a non-linear way.
+
+Two things that I feel I am stuck with are: 
+
+* How to model the ‘number of workers’ data since it requires two parameters - time (e.g., month index since construction started) and the number of workers at that period… the distributions in the examples I’ve seen model a single ‘value’. I can break this into a fixed array of multiple distributions (one per month) but for some reason that doesn’t seem right… (how will all those distributions be tied to each other? see next point)
+
+* How to tie the number of floors and distribution of workers to target distribution?
+
+Many thanks for reading all this, really not sure how to get help to go beyond the text book examples in probabilistic programming/graph models… quite frustrating, since I am really keen on applying it in my work.

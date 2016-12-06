@@ -1,0 +1,3 @@
+Hi there guys, I read the double Q-learning paper but I'm not sure if I understood it correctly or I thought I understood but in reality I didn't. Could someone explain it to me so I can confirm? So far, I think that they basically have two Q-functions that have different experience sets and alternate at every step when bootstrapping. Is this understanding correct?
+
+Thanks in advance :)
